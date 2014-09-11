@@ -1,0 +1,6 @@
+auth=login
+ports=49904s
+scidbport=49910
+user=root
+tmp=/tmp
+
