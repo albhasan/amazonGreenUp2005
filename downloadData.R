@@ -1,12 +1,11 @@
 ###########################################################
 # DOWNLOADS HDF DATA
 ###########################################################
-
 #Set up
 prod <- "MOD09Q1"
 col <- "005"
-fromDate <- "2001.01.01"
-toDate <- "2001.02.01"
+fromDate <- "2000.01.01"
+toDate <- "2000.03.01"
 tH <- 10:10
 tV <-8:8
 waitTime = 1
@@ -18,10 +17,9 @@ repos <- c("http://cran.us.r-project.org",
           "http://cran.mirror.ac.za/",
           "http://cran.ms.unimelb.edu.au/", 
           "http://R-Forge.R-project.org")
+###########################################################
 
 install.packages(pkgs = pkgs, repos = repos)
-
-
 
 library(MODIS)
 #MODISoptions(localArcPath, outDirPath, pixelSize, outProj, resamplingType, dataFormat, gdalPath, MODISserverOrder, dlmethod, stubbornness, systemwide = FALSE, quiet = FALSE, save=TRUE, checkPackages=TRUE)

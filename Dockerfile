@@ -126,7 +126,13 @@ RUN /etc/init.d/shimsvc qqstart
 
 #Copy additional configuration files
 ADD downloadData.R /home/scidb/downloadData.R
+ADD hdf2binary.py /home/scidb/hdf2binary.py
+RUN mkdir /home/scidb/toLoad
 RUN chown scidb:scidb /home/scidb/downloadData.R
+RUN chown scidb:scidb /home/scidb/hdf2binary.py
+RUN chown scidb:scidb /home/scidb/toLoad
+
+
 
 
 # Leave them here
