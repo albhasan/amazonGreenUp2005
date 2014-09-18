@@ -56,7 +56,15 @@ Reproduction of the computations on the article "Amazon Forest Green-Up During 2
 	<li>As the <em>scidb</em> user clone the project <em>modis2scidb</em> using <code>git clone https://github.com/albhasan/modis2scidb.git</code></li>
 	<li>Install support for <em>pyhdf</em> <code>yes | sudo modis2scidb/./install_pyhdf.sh</code></li>
 	<li>Create the destination array <code>iquery -q "CREATE ARRAY MOD09Q1_SALESKA <red:int16, nir:int16, quality:uint16> [col_id=48000:72000,1014,5,row_id=38400:62400,1014,5,time_id=0:9200,1,0];"</code></li>
-	<li>Run the folder monitor <code>python checkFolder.py /home/scidb/toLoad/ /home/scidb/modis2scidb/ MOD09Q1_SALESKA &</code></li>
+	<li>Run the folder monitor <code>python /home/scidb/modis2scidb/checkFolder.py --log INFO /home/scidb/toLoad/ /home/scidb/modis2scidb/ MOD09Q1_SALESKA &</code></li>
+	<li>Run the HDF export script <code>python /home/scidb/modis2scidb/run.py --log INFO /home/scidb/MODIS_ARC/MODIS/MOD09Q1.005/ R-MODIS /home/scidb/ /home/scidb/toLoad/ 10 14 8 10</code></li>
+	
+	
+	
+	
+	
+	
+	
 	<li>Run the exported</li>
 	</ul>
 </li>
