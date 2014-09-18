@@ -39,25 +39,27 @@ Reproduction of the computations on the article "Amazon Forest Green-Up During 2
 	<li>Build a docker image <code>./setup.sh</code>. This script will build the Docker image <em>scidb_img</em> and it will start the Docker container <em>scidb1</em>.</li>
 	<li>Login the SciDB Docker container <em>scidb1</em> by using <code>ssh -p 49901 root@localhost</code>. The default password is <em>xxxx.xxxx.xxxx</em><li>
 	<li>Run the commands in <em>/home/root/containerSetup.sh</em>. NOTE: You need to copy & paste the commands to a terminal.</li>
-	<li><b>NOTE</b>: The default setting is a single-instance DB. For a different setup, modifiy the contents of file <code>config.ini</code>. For example, to switch to the "big data" setup:</li>
+	<li><b>NOTE</b>: The default setting is a single-instance DB. For a different setup, modifiy the contents of file <code>config.ini</code>. For example, to switch to the "big data" setup:
 		<ul>
 		<li>Review the contents of <code>config.ini</code> under <em>[scidb_docker_bigdata]</em>.</li>
 		<li>Change the line <code>cd /tmp && sudo -u postgres /opt/scidb/14.3/bin/scidb.py init_syscat scidb_docker</code> for <code>cd /tmp && sudo -u postgres /opt/scidb/14.3/bin/scidb.py init_syscat scidb_docker_bigdata</code></li>
 		<li>Replace the ocurrences of <code>scidb_docker</code> for <code>scidb_docker_bigdata</code> on the files <code>startScidb.sh</code> and <code>stopScidb.sh</code></li>
 		</ul>
-	<ul>
-<li>Download MODIS' HDFs to the container</li>
+	</li>
+<li>Download MODIS' HDFs to the container
 	<ul>
 	<li>Run the R script <code>Rscript /home/scidb/downloadData.R</code>. This will download the required information from NASA servers and it will take hours or even days!</li>
 	</ul>
-<li>Load HDFs to SciDB</li>
+</li>
+<li>Load HDFs to SciDB
 	<ul>
 	<li>As the <em>scidb</em> user clone the project <em>modis2scidb</em> using <code>git clone https://github.com/albhasan/modis2scidb.git</code></li>
 	<li>Install support for <em>pyhdf</em> <code>yes | sudo modis2scidb/./install_pyhdf.sh</code></li>
 	<li>Create the destination array <code>iquery -q "CREATE ARRAY MOD09Q1_SALESKA <red:int16, nir:int16, quality:uint16> [col_id=48000:72000,1014,5,row_id=38400:62400,1014,5,time_id=0:9200,1,0];"</code></li>
-	<li>Run the folder monitor <code>python modis2scidb/checkFolder.py /home/scidb/toLoad/ /home/scidb/modis2scidb/ MOD09Q1_SALESKA &</code></li>
+	<li>Run the folder monitor <code>python checkFolder.py /home/scidb/toLoad/ /home/scidb/modis2scidb/ MOD09Q1_SALESKA &</code></li>
 	<li>Run the exported</li>
-
+	</ul>
+</li>
 
 
 	
