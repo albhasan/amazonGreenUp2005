@@ -48,7 +48,8 @@ Reproduction of the computations on the article "Amazon Forest Green-Up During 2
 	</li>
 <li>Download MODIS' HDFs to the container
 	<ul>
-	<li>Run the R script <code>Rscript /home/scidb/downloadData.R</code>. This will download the required information from NASA servers and it will take hours or even days!</li>
+	<li>Install the required R Packages: <code>Rscript /home/scidb/installPackages.R</code></li>
+	<li>Run the R script <code>Rscript /home/scidb/downloadData.R product=MOD09Q1 collection=005 begin=2000.02.01 end=2000.04.01 tileH=11:11 tileV=9:9 wait=1</code>. This will download the required information from NASA servers and it will take hours or even days!</li>
 	</ul>
 </li>
 <li>Load HDFs to SciDB

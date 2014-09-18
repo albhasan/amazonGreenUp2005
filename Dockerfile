@@ -41,7 +41,9 @@ RUN apt-get -qq update && apt-get install --fix-missing -y --force-yes \
 	sshpass \ 
 	libxml2-dev \ 
 	libgeos-dev \ 
-	git-core
+	git-core \ 
+	libgdal1-dev \ 
+	libproj-dev
 
 
 # Set environment
@@ -125,9 +127,11 @@ RUN /etc/init.d/shimsvc qqstart
 
 
 #Copy additional configuration files
+ADD downloadData.R /home/scidb/installPackages.R
 ADD downloadData.R /home/scidb/downloadData.R
 ADD hdf2binary.py /home/scidb/hdf2binary.py
 RUN mkdir /home/scidb/toLoad
+RUN chown scidb:scidb /home/scidb/installPackages.R
 RUN chown scidb:scidb /home/scidb/downloadData.R
 RUN chown scidb:scidb /home/scidb/hdf2binary.py
 RUN chown scidb:scidb /home/scidb/toLoad
