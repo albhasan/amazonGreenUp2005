@@ -34,18 +34,20 @@ Reproduction of the computations on the article "Amazon Forest Green-Up During 2
 <h3>Instructions:</h3>
 <ol>
 <li>Clone this project <code>git clone https://github.com/albhasan/amazonGreenUp2005.git</code></li>
-<li>Setup SciDB on Docker</li>
+<li>Setup SciDB on Docker
 	<ul>
-	<li>Build a docker image <code>./setup.sh</code>. This script will build the Docker image <em>scidb_img</em> and it will start the Docker container <em>scidb1</em>.</li>
-	<li>Login the SciDB Docker container <em>scidb1</em> by using <code>ssh -p 49901 root@localhost</code>. The default password is <em>xxxx.xxxx.xxxx</em><li>
-	<li>Run the commands in <em>/home/root/containerSetup.sh</em>. NOTE: You need to copy & paste the commands to a terminal.</li>
-	<li><b>NOTE</b>: The default setting is a single-instance DB. For a different setup, modifiy the contents of file <code>config.ini</code>. For example, to switch to the "big data" setup:
-		<ul>
-		<li>Review the contents of <code>config.ini</code> under <em>[scidb_docker_bigdata]</em>.</li>
-		<li>Change the line <code>cd /tmp && sudo -u postgres /opt/scidb/14.3/bin/scidb.py init_syscat scidb_docker</code> for <code>cd /tmp && sudo -u postgres /opt/scidb/14.3/bin/scidb.py init_syscat scidb_docker_bigdata</code></li>
-		<li>Replace the ocurrences of <code>scidb_docker</code> for <code>scidb_docker_bigdata</code> on the files <code>startScidb.sh</code> and <code>stopScidb.sh</code></li>
-		</ul>
-	</li>
+		<li>Build a docker image <code>./setup.sh</code>. This script will build the Docker image <em>scidb_img</em> and it will start the Docker container <em>scidb1</em>.</li>
+		<li>Login the SciDB Docker container <em>scidb1</em> by using <code>ssh -p 49901 root@localhost</code>. The default password is <em>xxxx.xxxx.xxxx</em><li>
+		<li>Run the commands in <em>/home/root/containerSetup.sh</em>. <b>NOTE</b>: You need to copy & paste the commands to a terminal.</li>
+		<li><b>NOTE</b>: The default setting is a single-instance DB. For a different setup, modifiy the contents of file <code>config.ini</code>. For example, to switch to the "big data" setup:
+			<ul>
+			<li>Review the contents of <code>config.ini</code> under <em>[scidb_docker_bigdata]</em>.</li>
+			<li>Change the line <code>cd /tmp && sudo -u postgres /opt/scidb/14.3/bin/scidb.py init_syscat scidb_docker</code> for <code>cd /tmp && sudo -u postgres /opt/scidb/14.3/bin/scidb.py init_syscat scidb_docker_bigdata</code></li>
+			<li>Replace the ocurrences of <code>scidb_docker</code> for <code>scidb_docker_bigdata</code> on the files <code>startScidb.sh</code> and <code>stopScidb.sh</code></li>
+			</ul>
+		</li>
+	</ul>
+</li>
 <li>Download MODIS' HDFs to the container
 	<ul>
 	<li>Install the required R Packages: <code>Rscript /home/scidb/installPackages.R</code></li>
@@ -56,23 +58,15 @@ Reproduction of the computations on the article "Amazon Forest Green-Up During 2
 	<ul>
 	<li>As the <em>scidb</em> user clone the project <em>modis2scidb</em> using <code>git clone https://github.com/albhasan/modis2scidb.git</code></li>
 	<li>Install support for <em>pyhdf</em> <code>yes | sudo modis2scidb/./install_pyhdf.sh</code></li>
-	<li>Create the destination array <code>iquery -q "CREATE ARRAY MOD09Q1_SALESKA <red:int16, nir:int16, quality:uint16> [col_id=48000:72000,1014,5,row_id=38400:62400,1014,5,time_id=0:9200,1,0];"</code></li>
+	<li>Create the destination array <code>iquery -q "CREATE ARRAY MOD09Q1_SALESKA &lt;red:int16, nir:int16, quality:uint16&gt; [col_id=48000:72000,1014,5,row_id=38400:62400,1014,5,time_id=0:9200,1,0];"</code></li>
 	<li>Run the folder monitor <code>python /home/scidb/modis2scidb/checkFolder.py --log INFO /home/scidb/toLoad/ /home/scidb/modis2scidb/ MOD09Q1_SALESKA &</code></li>
 	<li>Run the HDF export script <code>python /home/scidb/modis2scidb/run.py --log INFO /home/scidb/MODIS_ARC/MODIS/MOD09Q1.005/ R-MODIS /home/scidb/ /home/scidb/toLoad/ 10 14 8 10</code></li>
-	
-	
-	
-	
-	
-	
-	
-	<li>Run the exported</li>
 	</ul>
 </li>
-
+<li>Compute the anomalies: <code>iquery -f anomalyComputation.afl</code></li>
 
 	
 	
-	<ul>
-<li>Run the process on SciDB</li>
+	
+
 </ol>

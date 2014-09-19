@@ -41,9 +41,9 @@ RUN apt-get -qq update && apt-get install --fix-missing -y --force-yes \
 	sshpass \ 
 	libxml2-dev \ 
 	libgeos-dev \ 
-	git-core \ 
-	libgdal1-dev \ 
-	libproj-dev
+	git-core 
+#	libgdal1-dev \ 
+#	libproj-dev
 
 
 # Set environment
@@ -127,16 +127,17 @@ RUN /etc/init.d/shimsvc qqstart
 
 
 #Copy additional configuration files
-ADD downloadData.R /home/scidb/installPackages.R
+ADD installPackages.R /home/scidb/installPackages.R
 ADD downloadData.R /home/scidb/downloadData.R
 ADD hdf2binary.py /home/scidb/hdf2binary.py
+ADD anomalyComputation.afl /home/scidb/anomalyComputation.afl
+
 RUN mkdir /home/scidb/toLoad
 RUN chown scidb:scidb /home/scidb/installPackages.R
 RUN chown scidb:scidb /home/scidb/downloadData.R
 RUN chown scidb:scidb /home/scidb/hdf2binary.py
+RUN chown scidb:scidb /home/scidb/anomalyComputation.afl
 RUN chown scidb:scidb /home/scidb/toLoad
-
-
 
 
 # Leave them here
@@ -145,6 +146,12 @@ RUN apt-get -qq update && apt-get install --fix-missing -y --force-yes \
 	libgdal1-dev 
 
 
+#THIS DOES NOT WORK
+#RUN Rscript /home/scidb/installPackages.R
+#git clone https://github.com/albhasan/modis2scidb.git
+#RUN yes | modis2scidb/./install_pyhdf.sh
+
+	
 EXPOSE 49901
 EXPOSE 49904
 
