@@ -1,7 +1,7 @@
 ###########################################################
 # INSTALL PACKAGES
 ###########################################################
-pkgs <- c("RCurl", "snow", "ptw", "bitops", "mapdata", "XML", "rgeos", "rgdal", "MODIS")
+pkgs <- c("RCurl", "snow", "ptw", "bitops", "mapdata", "XML", "rgeos", "rgdal", "MODIS", "scidb")
 repos <- c("http://cran.us.r-project.org", 
           "http://cran.r-mirror.de/", 
           "http://www.laqee.unal.edu.co/CRAN/", 

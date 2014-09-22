@@ -48,7 +48,7 @@ rm /home/scidb/pass.txt
 ##################################################
 exit
 /etc/init.d/postgresql restart
-cd /tmp && sudo -u postgres /opt/scidb/14.3/bin/scidb.py init_syscat scidb_docker
+cd /tmp && sudo -u postgres /opt/scidb/14.3/bin/scidb.py init_syscat scidb_docker_2a
 sudo su scidb
 cd ~
 export SCIDB_VER=14.3
@@ -65,17 +65,17 @@ iquery -aq "scan(TEST_ARRAY)"
 ##################################################
 #INSTALLATION TEST USING R
 ##################################################
-R
-install.packages('scidb', quiet = TRUE)
-yes
-yes
-34
-library(scidb)
-scidbconnect("localhost", 49904, "scidb", "xxxx.xxxx.xxxx")
-scidblist()
-iquery("scan(TEST_ARRAY)",return=TRUE)
-quit()
-no
+#R
+#install.packages('scidb', quiet = TRUE)
+#yes
+#yes
+#34
+#library(scidb)
+#scidbconnect("localhost", 49904, "scidb", "xxxx.xxxx.xxxx")
+#scidblist()
+#iquery("scan(TEST_ARRAY)",return=TRUE)
+#quit()
+#no
 ##################################################
 #LOG OUT
 ##################################################

@@ -8,6 +8,7 @@ Reproduction of the computations on the article "Amazon Forest Green-Up During 2
 <ul>
 <li>Docker.io</li>
 <li>SSH</li>
+<li>Interbet access</li>
 </ul>
 
 
@@ -39,24 +40,24 @@ Reproduction of the computations on the article "Amazon Forest Green-Up During 2
 		<li>Build a docker image <code>./setup.sh</code>. This script will build the Docker image <em>scidb_img</em> and it will start the Docker container <em>scidb1</em>.</li>
 		<li>Login the SciDB Docker container <em>scidb1</em> by using <code>ssh -p 49901 root@localhost</code>. The default password is <em>xxxx.xxxx.xxxx</em><li>
 		<li>Run the commands in <em>/home/root/containerSetup.sh</em>. <b>NOTE</b>: You need to copy & paste the commands to a terminal.</li>
-		<li><b>NOTE</b>: The default setting is a single-instance DB. For a different setup, modifiy the contents of file <code>config.ini</code>. For example, to switch to the "big data" setup:
+		<li><b>NOTE</b>: The default setting is a <em>scidb_docker_2a</em> (see table below). For a different setup, modifiy the contents of file <code>config.ini</code>. For example, to switch to the "scidb_docker_8" setup:
 			<ul>
-			<li>Review the contents of <code>config.ini</code> under <em>[scidb_docker_bigdata]</em>.</li>
-			<li>Change the line <code>cd /tmp && sudo -u postgres /opt/scidb/14.3/bin/scidb.py init_syscat scidb_docker</code> for <code>cd /tmp && sudo -u postgres /opt/scidb/14.3/bin/scidb.py init_syscat scidb_docker_bigdata</code></li>
-			<li>Replace the ocurrences of <code>scidb_docker</code> for <code>scidb_docker_bigdata</code> on the files <code>startScidb.sh</code> and <code>stopScidb.sh</code></li>
+			<li>Review the contents of <code>config.ini</code> under <em>[scidb_docker_8]</em>.</li>
+			<li>Change the line <code>cd /tmp && sudo -u postgres /opt/scidb/14.3/bin/scidb.py init_syscat scidb_docker_2a</code> for <code>cd /tmp && sudo -u postgres /opt/scidb/14.3/bin/scidb.py init_syscat scidb_docker_8</code></li>
+			<li>Replace the ocurrences of <code>scidb_docker_2a</code> for <code>scidb_docker_8</code> on the files <code>startScidb.sh</code> and <code>stopScidb.sh</code></li>
 			</ul>
 		</li>
 	</ul>
 </li>
 <li>Download MODIS' HDFs to the container
 	<ul>
-	<li>Install the required R Packages: <code>Rscript /home/scidb/installPackages.R</code></li>
+	<li>Install the required R Packages: <code>sudo Rscript /home/scidb/installPackages.R</code></li>
 	<li>Run the R script <code>Rscript /home/scidb/downloadData.R product=MOD09Q1 collection=005 begin=2000.02.01 end=2000.04.01 tileH=11:11 tileV=9:9 wait=1</code>. This will download the required information from NASA servers and it will take hours or even days!</li>
 	</ul>
 </li>
 <li>Load HDFs to SciDB
 	<ul>
-	<li>As the <em>scidb</em> user clone the project <em>modis2scidb</em> using <code>git clone https://github.com/albhasan/modis2scidb.git</code></li>
+	<li>As the <em>scidb</em> user clone the project <em>modis2scidb</em> using <code>git clone http://github.com/albhasan/modis2scidb.git</code></li>
 	<li>Install support for <em>pyhdf</em> <code>yes | sudo modis2scidb/./install_pyhdf.sh</code></li>
 	<li>Create the destination array <code>iquery -q "CREATE ARRAY MOD09Q1_SALESKA &lt;red:int16, nir:int16, quality:uint16&gt; [col_id=48000:72000,1014,5,row_id=38400:62400,1014,5,time_id=0:9200,1,0];"</code></li>
 	<li>Run the folder monitor <code>python /home/scidb/modis2scidb/checkFolder.py --log INFO /home/scidb/toLoad/ /home/scidb/modis2scidb/ MOD09Q1_SALESKA &</code></li>
@@ -70,3 +71,56 @@ Reproduction of the computations on the article "Amazon Forest Green-Up During 2
 	
 
 </ol>
+
+
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Instances per server<br></th>
+    <th>Max concurrent connections<br></th>
+    <th>CPU cores per server<br></th>
+    <th>GB per server<br></th>
+  </tr>
+  <tr>
+    <td>scidb_docker_1</td>
+    <td>1<br></td>
+    <td>2</td>
+    <td>2</td>
+    <td>2</td>
+  </tr>
+  <tr>
+    <td>scidb_docker_2</td>
+    <td>2</td>
+    <td>2</td>
+    <td>4</td>
+    <td>4</td>
+  </tr>
+  <tr>
+    <td>scidb_docker_2a</td>
+    <td>2</td>
+    <td>2</td>
+    <td>4</td>
+    <td>8</td>
+  </tr>
+  <tr>
+    <td>scidb_docker_2b</td>
+    <td>2</td>
+    <td>2</td>
+    <td>4</td>
+    <td>16</td>
+  </tr>
+  <tr>
+    <td>scidb_docker_4</td>
+    <td>4</td>
+    <td>4</td>
+    <td>4</td>
+    <td>16</td>
+  </tr>
+  <tr>
+    <td>scidb_docker_8</td>
+    <td>8</td>
+    <td>16</td>
+    <td>24</td>
+    <td>160</td>
+  </tr>
+</table>
