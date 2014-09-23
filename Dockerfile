@@ -41,9 +41,7 @@ RUN apt-get -qq update && apt-get install --fix-missing -y --force-yes \
 	sshpass \ 
 	libxml2-dev \ 
 	libgeos-dev \ 
-	git-core 
-#	libgdal1-dev \ 
-#	libproj-dev
+	git-core
 
 
 # Set environment
@@ -63,11 +61,10 @@ RUN echo 'root:xxxx.xxxx.xxxx' | chpasswd
 RUN echo 'postgres:xxxx.xxxx.xxxx' | chpasswd
 RUN echo 'scidb:xxxx.xxxx.xxxx' | chpasswd
 RUN echo 'xxxx.xxxx.xxxx'  >> /home/scidb/pass.txt
-RUN chown scidb:scidb /home/scidb/pass.txt
+
+
 RUN mkdir /home/scidb/data
 RUN mkdir /home/scidb/catalog
-RUN chown scidb:scidb /home/scidb/data
-RUN chown scidb:scidb /home/scidb/catalog
 
 
 # install SCIDB & R
@@ -87,7 +84,6 @@ RUN wget http://paradigm4.github.io/shim/shim_14.3-2_amd64.deb
 RUN yes | gdebi -q shim_14.3-2_amd64.deb
 RUN rm /var/lib/shim/conf
 ADD conf /var/lib/shim/conf
-RUN chown root:root /var/lib/shim/conf
 RUN rm shim_14.3-2_amd64.deb
 
 
@@ -102,21 +98,56 @@ RUN echo 'host  all all 255.255.0.0/16   md5' >> /etc/postgresql/8.4/main/pg_hba
 RUN sed -i 's/5432/49902/g' /etc/postgresql/8.4/main/postgresql.conf
 
 
-# Configure SciDB
-ADD config.ini /opt/scidb/14.3/etc/config.ini
-ADD containerSetup.sh /home/root/containerSetup.sh
-ADD iquery.conf /home/root/.config/scidb/iquery.conf
-ADD iquery.conf /home/scidb/.config/scidb/iquery.conf
-ADD startScidb.sh /home/scidb/startScidb.sh
-ADD stopScidb.sh /home/scidb/stopScidb.sh
-ADD .pam_environment /home/scidb/.pam_environment
-RUN chown root:root /opt/scidb/14.3/etc/config.ini
-RUN chown root:root /home/root/.config/scidb/iquery.conf
-RUN chown scidb:scidb /home/scidb/.config/scidb/iquery.conf
-RUN chmod +x /home/scidb/startScidb.sh /home/scidb/stopScidb.sh
-RUN chown scidb:scidb /home/scidb/startScidb.sh
-RUN chown scidb:scidb /home/scidb/stopScidb.sh
-RUN chown scidb:scidb /home/scidb/.pam_environment
+
+RUN mkdir /home/scidb/toLoad
+
+
+# Add files
+ADD config.ini 				/opt/scidb/14.3/etc/config.ini
+ADD containerSetup.sh 		/home/root/containerSetup.sh
+ADD installParallel.sh 		/home/root/installParallel.sh
+ADD installPackages.R 		/home/root/installPackages.R
+ADD install_pyhdf.sh		/home/root/install_pyhdf.sh
+ADD iquery.conf 			/home/root/.config/scidb/iquery.conf
+ADD iquery.conf 			/home/scidb/.config/scidb/iquery.conf
+ADD startScidb.sh 			/home/scidb/startScidb.sh
+ADD stopScidb.sh 			/home/scidb/stopScidb.sh
+ADD .pam_environment 		/home/scidb/.pam_environment
+ADD downloadData.R 			/home/scidb/downloadData.R
+ADD downloadData.sh 		/home/scidb/downloadData.sh
+ADD hdf2bin.sh 				/home/scidb/hdf2bin.sh
+#ADD hdf2binary.py 			/home/scidb/hdf2binary.py
+ADD anomalyComputation.afl 	/home/scidb/anomalyComputation.afl
+
+
+RUN chown root:root   \ 
+	/opt/scidb/14.3/etc/config.ini  \ 
+	/home/root/.config/scidb/iquery.conf  \ 
+	/home/root/installParallel.sh \ 
+	/home/root/installPackages.R \ 
+	/home/root/install_pyhdf.sh \ 
+	/var/lib/shim/conf
+RUN chown scidb:scidb  \ 
+	/home/scidb/.config/scidb/iquery.conf  \ 
+	/home/scidb/startScidb.sh  \ 
+	/home/scidb/stopScidb.sh  \ 
+	/home/scidb/.pam_environment  \ 
+	/home/scidb/downloadData.R \ 
+	/home/scidb/downloadData.sh  \ 
+	/home/scidb/anomalyComputation.afl \ 
+	/home/scidb/hdf2bin.sh \ 
+	/home/scidb/pass.txt \ 
+	/home/scidb/toLoad \ 
+	/home/scidb/data \ 
+	/home/scidb/catalog	
+#	/home/scidb/hdf2binary.py \ 
+RUN chmod +x  \ 
+	/home/scidb/startScidb.sh \ 
+	/home/scidb/stopScidb.sh  \ 
+	/home/root/installParallel.sh \ 
+	/home/scidb/downloadData.sh \ 
+	/home/root/install_pyhdf.sh \ 
+	/home/scidb/hdf2bin.sh
 
 
 # Restarting services
@@ -126,22 +157,8 @@ RUN /etc/init.d/postgresql restart
 RUN /etc/init.d/shimsvc qqstart
 
 
-#Copy additional configuration files
-ADD installPackages.R /home/scidb/installPackages.R
-ADD downloadData.R /home/scidb/downloadData.R
-ADD hdf2binary.py /home/scidb/hdf2binary.py
-ADD anomalyComputation.afl /home/scidb/anomalyComputation.afl
-
-RUN mkdir /home/scidb/toLoad
-RUN chown scidb:scidb /home/scidb/installPackages.R
-RUN chown scidb:scidb /home/scidb/downloadData.R
-RUN chown scidb:scidb /home/scidb/hdf2binary.py
-RUN chown scidb:scidb /home/scidb/anomalyComputation.afl
-RUN chown scidb:scidb /home/scidb/toLoad
-
-
 # Leave them here
-RUN apt-get -qq update && apt-get install --fix-missing -y --force-yes \
+RUN apt-get -qq update && apt-get install --fix-missing -y --force-yes \ 
 	libproj-dev \ 
 	libgdal1-dev 
 

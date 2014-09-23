@@ -2,11 +2,11 @@
 # DOWNLOADS HDF DATA
 #Rscript downloadData.R product=MOD09Q1 collection=005 begin=2000.02.01 end=2000.04.01 tileH=11:11 tileV=9:9 wait=1
 ###########################################################
-#Gert arguments
+#Get arguments
 argsep <- "="
 keys <- vector(mode = "character", length = 0)
 values <- vector(mode = "character", length = 0)
-commandArgs <- c("uno=1", "dos=2")
+#commandArgs <- c("uno=1", "dos=2")
 for (arg in commandArgs()){
   if(agrep(argsep, arg) == TRUE){
     pair <- unlist(strsplit(arg, argsep))
@@ -14,6 +14,10 @@ for (arg in commandArgs()){
     values <- append(values, pair[2], after = length(pair))
   }
 }
+
+#cat("\n-----------------\n")
+#matrix(data = cbind(keys, values), ncol = 2, byrow = FALSE)
+#cat("\n-----------------\n")
 
 product <- values[which(keys == "product")]
 begin <- values[which(keys == "begin")]
