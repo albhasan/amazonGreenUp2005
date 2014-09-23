@@ -8,7 +8,7 @@ Reproduction of the computations on the article "Amazon Forest Green-Up During 2
 <ul>
 <li>Docker.io</li>
 <li>SSH</li>
-<li>Interbet access</li>
+<li>Internet access</li>
 </ul>
 
 
@@ -20,7 +20,7 @@ Reproduction of the computations on the article "Amazon Forest Green-Up During 2
 	
 	<li>Docker-related files
 	<ul>
-		<li><code>setup.sh</code> - (host) Script for removing old containers and images from host machine.</li>
+		<li><code>setup.sh</code> - (host) Script for generating a docker image.</li>
 		<li><code>Dockerfile</code> - (host) Docker file for building a Docker Image.</li>
 	</ul>
 	</li>
@@ -39,10 +39,11 @@ Reproduction of the computations on the article "Amazon Forest Green-Up During 2
 	<li>Other files
 	<ul>
 		<li><code>install_pyhdf.sh</code> - Install an interface for enabling python to handle HDFs.</li>
-		<li><code>installPackages.R</code> - R script for installing packages.</li>		
+		<li><code>installParallel.sh</code> - Script for installing parallel.Parallel allows to execute scripts at the same time.</li>
+		<li><code>installPackages.R</code> - R script for installing R packages.</li>
 		<li><code>downloadData.R</code> - R script for downloading MODIS data from NASA website.</li>
 		<li><code>downloadData.sh</code> - Script for downloading MODIS in parallel. It is a wrapper of <code>downloadData.R</code></li>
-		<li><code>hdf2bin.sh</code> - Script for exporting HDFs to binary files. It is a wrapper of the python scripts available at <a href="http://github.com/albhasan/modis2scidb" target="_blank">modis2scidb</a></li>
+		<li><code>hdf2bin.sh</code> - Script for exporting HDFs to binary files. It is a wrapper of the python scripts available at <a href="http://github.com/albhasan/modis2scidb" target="_blank">modis2scidb</a>.</li>
 	</ul>
 	</li>
 </ul>
@@ -51,22 +52,22 @@ Reproduction of the computations on the article "Amazon Forest Green-Up During 2
 <h3>Instructions:</h3>
 <ol>
 <li>Clone this project <code>git clone https://github.com/albhasan/amazonGreenUp2005.git</code></li>
-<li>Setup SciDB on Docker
+<li>Setup SciDB on Docker and other required stuff:
 	<ul>
 		<li>Build a docker image <code>./setup.sh</code>. This script will build the Docker image <em>scidb_img</em> and it will start the Docker container <em>scidb1</em>.</li>
-		<li>Login the SciDB Docker container <em>scidb1</em> by using <code>ssh -p 49901 root@localhost</code>. The default password is <em>xxxx.xxxx.xxxx</em><li>
+		<li>Login the SciDB Docker container <em>scidb1</em> by using <code>ssh -p 49901 root@localhost</code>. The default password is <em>xxxx.xxxx.xxxx</em></li>
 		<li>Install parallel: <code>/home/root/./installParallel.sh</code></li>
 		<li>Install pyhdf: <code>yes | /home/root/./install_pyhdf.sh</code></li>
 		<li>Install the required R Packages: <code>Rscript /home/root/installPackages.R packages=RCurl,snow,ptw,bitops,mapdata,XML,rgeos,rgdal,MODIS,scidb verbose=0 quiet=0</code></li>		
 		<li>Run the commands in <em>/home/root/containerSetup.sh</em>. <b>NOTE</b>: You need to copy & paste the commands to a terminal.</li>
 	</ul>
 </li>
-<li>Download MODIS' HDFs to the container
+<li>Download MODIS' HDFs to the container:
 	<ul>
 <li>Run the script <code>./downloadData.sh MOD09Q1 005 2000 2006 07.01 09.30 10:13 8:10 1</code>. This will download the required information from NASA servers and it will take hours or even days!</li>
 	</ul>
 </li>
-<li>Load HDFs to SciDB
+<li>Load HDFs to SciDB:
 	<ul>
 	<li>As the <em>scidb</em> user clone the project <em>modis2scidb</em> using <code>git clone http://github.com/albhasan/modis2scidb.git</code></li>
 	<li>Create the destination array <code>iquery -q "CREATE ARRAY MOD09Q1_SALESKA &lt;red:int16, nir:int16, quality:uint16&gt; [col_id=48000:72000,1014,5,row_id=38400:62400,1014,5,time_id=0:9200,1,0];"</code></li>
@@ -89,7 +90,7 @@ Reproduction of the computations on the article "Amazon Forest Green-Up During 2
 	</li>
 </ul>
 
-<h4>SciDB setup available in <code>config.ini</code>:</h4>
+<h5>SciDB setup options available in <code>config.ini</code>:</h5>
 <table>
   <tr>
     <th>Name</th>
