@@ -3,7 +3,6 @@
 --***********************************************************************************************
 set no fetch;
 set lang afl;
---***********************************************************************************************
 
 --Selects the data using spatial (amazon) temporal (JAS 2000-2006) and quality criteria
 store(between(filter(MOD09Q1_SALESKA, time_id % 46 >= 23 and time_id % 46 <= 34 and quality = 4096), 48000, 38400, 0, 52799, 43199, 321), MODIS_AMZ_BQ_JAS);
@@ -30,4 +29,3 @@ remove(MODIS_AMZ_BQ_JAS_EVI2_AVG_2000_2006);
 remove(MODIS_AMZ_BQ_JAS_EVI2_AVG_2005);
 remove(MODIS_AMZ_EVI2_COMP);
 --remove(MODIS_AMZ_EVI2_ANOM);
-

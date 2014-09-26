@@ -1,4 +1,4 @@
-# SciDB 14.3.0.7383
+# AMAZON GREEN UP ON SciDB 14.8
 #
 # VERSION 1.0
 #
@@ -10,9 +10,9 @@
 #PORT MAPPING
 #SERVICE		DEFAULT		MAPPED
 #ssh 			22			49901
-#Postgresql 	5432		49902
-#shim			8083s		49904
-#SciDB			1239		49910
+#shim			8083s		49902
+#Postgresql 	5432		49903
+#SciDB			1239		49904
 
 
 FROM ubuntu:12.04
@@ -49,9 +49,6 @@ RUN locale-gen en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
-ENV SCIDB_VER 14.3
-ENV PATH $PATH:/opt/scidb/$SCIDB_VER/bin:/opt/scidb/$SCIDB_VER/share/scidb
-ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/opt/scidb/$SCIDB_VER/lib:/opt/scidb/$SCIDB_VER/3rdparty/boost/lib
 RUN env
 
 
@@ -63,90 +60,86 @@ RUN echo 'scidb:xxxx.xxxx.xxxx' | chpasswd
 RUN echo 'xxxx.xxxx.xxxx'  >> /home/scidb/pass.txt
 
 
+RUN mkdir /var/run/sshd
 RUN mkdir /home/scidb/data
 RUN mkdir /home/scidb/catalog
-
+RUN mkdir /home/scidb/toLoad
 
 # install SCIDB & R
-RUN echo 'deb  http://downloads.paradigm4.com/  ubuntu12.04/14.3/' >> /etc/apt/sources.list.d/scidb.list
-RUN echo 'deb-src  http://downloads.paradigm4.com/  ubuntu12.04/14.3/' >> /etc/apt/sources.list.d/scidb.list
 RUN echo "deb http://cran.r-project.org/bin/linux/ubuntu precise/" >> /etc/apt/sources.list
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
-RUN wget -O- http://downloads.paradigm4.com/key | sudo apt-key add -
 RUN apt-get -qq update && apt-get install -y --force-yes \
-	scidb-14.3-all-coord \
 	r-base \ 
 	r-cran-spatial
 
 	
-# Install SHIM
-RUN wget http://paradigm4.github.io/shim/shim_14.3-2_amd64.deb
-RUN yes | gdebi -q shim_14.3-2_amd64.deb
-RUN rm /var/lib/shim/conf
-ADD conf /var/lib/shim/conf
-RUN rm shim_14.3-2_amd64.deb
-
-
 # Configure SSH
-RUN mkdir /var/run/sshd
 RUN sed -i 's/22/49901/g' /etc/ssh/sshd_config
 RUN echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config
 
 
 # Configure Postgres 
 RUN echo 'host  all all 255.255.0.0/16   md5' >> /etc/postgresql/8.4/main/pg_hba.conf
-RUN sed -i 's/5432/49902/g' /etc/postgresql/8.4/main/postgresql.conf
-
-
-
-RUN mkdir /home/scidb/toLoad
+RUN sed -i 's/5432/49903/g' /etc/postgresql/8.4/main/postgresql.conf
 
 
 # Add files
-ADD config.ini 				/opt/scidb/14.3/etc/config.ini
 ADD containerSetup.sh 		/home/root/containerSetup.sh
-ADD installParallel.sh 		/home/root/installParallel.sh
-ADD installPackages.R 		/home/root/installPackages.R
-ADD install_pyhdf.sh		/home/root/install_pyhdf.sh
-ADD iquery.conf 			/home/root/.config/scidb/iquery.conf
+ADD conf	 				/home/root/conf
 ADD iquery.conf 			/home/scidb/.config/scidb/iquery.conf
+ADD installPackages.R		/home/scidb/installPackages.R
 ADD startScidb.sh 			/home/scidb/startScidb.sh
 ADD stopScidb.sh 			/home/scidb/stopScidb.sh
-ADD .pam_environment 		/home/scidb/.pam_environment
+ADD scidb_docker_1.ini		/home/scidb/scidb_docker_1.ini
+ADD scidb_docker_2a.ini		/home/scidb/scidb_docker_2a.ini
+ADD scidb_docker_2b.ini		/home/scidb/scidb_docker_2b.ini
+ADD scidb_docker_2.ini		/home/scidb/scidb_docker_2.ini
+ADD scidb_docker_4.ini		/home/scidb/scidb_docker_4.ini
+ADD scidb_docker_8.ini		/home/scidb/scidb_docker_8.ini
 ADD downloadData.R 			/home/scidb/downloadData.R
 ADD downloadData.sh 		/home/scidb/downloadData.sh
+ADD installParallel.sh 		/home/root/installParallel.sh
+ADD install_pyhdf.sh		/home/root/install_pyhdf.sh
 ADD hdf2bin.sh 				/home/scidb/hdf2bin.sh
-#ADD hdf2binary.py 			/home/scidb/hdf2binary.py
 ADD anomalyComputation.afl 	/home/scidb/anomalyComputation.afl
 
 
-RUN chown root:root   \ 
-	/opt/scidb/14.3/etc/config.ini  \ 
-	/home/root/.config/scidb/iquery.conf  \ 
+RUN chown root:root \ 
+	/home/root/containerSetup.sh \ 
+	/home/root/conf \ 
 	/home/root/installParallel.sh \ 
-	/home/root/installPackages.R \ 
-	/home/root/install_pyhdf.sh \ 
-	/var/lib/shim/conf
-RUN chown scidb:scidb  \ 
-	/home/scidb/.config/scidb/iquery.conf  \ 
-	/home/scidb/startScidb.sh  \ 
-	/home/scidb/stopScidb.sh  \ 
-	/home/scidb/.pam_environment  \ 
-	/home/scidb/downloadData.R \ 
-	/home/scidb/downloadData.sh  \ 
-	/home/scidb/anomalyComputation.afl \ 
-	/home/scidb/hdf2bin.sh \ 
-	/home/scidb/pass.txt \ 
-	/home/scidb/toLoad \ 
-	/home/scidb/data \ 
-	/home/scidb/catalog	
-#	/home/scidb/hdf2binary.py \ 
-RUN chmod +x  \ 
+	/home/root/install_pyhdf.sh
+
+
+RUN chown scidb:scidb /home/scidb/*
+#RUN chown scidb:scidb  \ 
+#	/home/scidb/.config/scidb/iquery.conf  \ 
+#	/home/scidb/pass.txt \ 
+#	/home/scidb/data \ 
+#	/home/scidb/catalog	
+#	/home/scidb/startScidb.sh  \ 
+#	/home/scidb/stopScidb.sh  \ 
+#	/home/scidb/scidb_docker_1.ini \ 
+#	/home/scidb/scidb_docker_2a.ini \ 
+#	/home/scidb/scidb_docker_2b.ini	\ 
+#	/home/scidb/scidb_docker_2.ini \ 
+#	/home/scidb/scidb_docker_4.ini \ 
+#	/home/scidb/scidb_docker_8.ini \ 
+#	/home/scidb/installPackages.R	
+#	/home/scidb/downloadData.R \ 
+#	/home/scidb/downloadData.sh  \ 
+#	/home/scidb/anomalyComputation.afl \ 
+#	/home/scidb/hdf2bin.sh \ 
+#	/home/scidb/toLoad
+
+
+RUN chmod +x \ 
+	/home/root/containerSetup.sh \ 
 	/home/scidb/startScidb.sh \ 
 	/home/scidb/stopScidb.sh  \ 
 	/home/root/installParallel.sh \ 
-	/home/scidb/downloadData.sh \ 
 	/home/root/install_pyhdf.sh \ 
+	/home/scidb/downloadData.sh \ 
 	/home/scidb/hdf2bin.sh
 
 
@@ -154,7 +147,6 @@ RUN chmod +x  \
 RUN stop ssh
 RUN start ssh
 RUN /etc/init.d/postgresql restart
-RUN /etc/init.d/shimsvc qqstart
 
 
 # Leave them here
@@ -170,7 +162,7 @@ RUN apt-get -qq update && apt-get install --fix-missing -y --force-yes \
 
 	
 EXPOSE 49901
-EXPOSE 49904
+EXPOSE 49902
 
 
 CMD    ["/usr/sbin/sshd", "-D"]
