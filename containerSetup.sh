@@ -88,7 +88,7 @@ cd ~
 
 
 git clone http://github.com/albhasan/modis2scidb.git
-iquery -q "CREATE ARRAY MOD09Q1_SALESKA <red:int16, nir:int16, quality:uint16> [col_id=48000:72000,1014,5,row_id=38400:62400,1014,5,time_id=0:9200,1,0];"
+iquery -q "CREATE ARRAY MOD09Q1_SALESKA <red:int16, nir:int16, quality:uint16> [col_id=48000:67199,1014,5,row_id=38400:52799,1014,5,time_id=0:9200,1,0];"
 python /home/scidb/modis2scidb/checkFolder.py --log INFO /home/scidb/toLoad/ /home/scidb/modis2scidb/ MOD09Q1_SALESKA &
 /home/scidb/./hdf2bin.sh /home/scidb/MODIS_ARC/MODIS/MOD09Q1.005/ 2000 2006 10 13 8 10 R-MODIS /home/scidb/ /home/scidb/toLoad/ INFO
 #********************************************************

@@ -18,4 +18,3 @@ LOG=${11}
 
 eval "parallel --no-notice --xapply python /home/scidb/modis2scidb/run.py -yf {1} -yt {2} --log INFO $MODISPATH $FILESCHEMA $BASEFILEPATH $LOADFOLDER $TILEHFROM $TILEHTO $TILEVFROM $TILEVTO ::: {$FROMYEAR..$TOYEAR} ::: {$FROMYEAR..$TOYEAR}"
 echo "Finished exporting MODIS to binary!" 
-
