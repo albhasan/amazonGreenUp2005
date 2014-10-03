@@ -43,6 +43,7 @@ Reproduction of the computations on the article "Amazon Forest Green-Up During 2
 		<li><code>downloadData.R</code> - R script for downloading MODIS data from NASA website.</li>
 		<li><code>downloadData.sh</code> - Script for downloading MODIS in parallel. It is a wrapper of <code>downloadData.R</code></li>
 		<li><code>hdf2bin.sh</code> - Script for exporting HDFs to binary files. It is a wrapper of the python scripts available at <a href="http://github.com/albhasan/modis2scidb" target="_blank">modis2scidb</a>.</li>
+		<li><code>exploreResults.R</code> - Script for retrieving and ploting the resulting EVI2 anomalies.</li>
 	</ul>
 	</li>
 </ul>
@@ -59,6 +60,7 @@ Reproduction of the computations on the article "Amazon Forest Green-Up During 2
 	</li>
 	<li>Run the container script using one of the SciDB configuration file names as a parameter, for example: <code>/home/root/./containerSetup.sh scidb_docker_2a.ini</code>.</li>
 	<li>The array with the results is <code>MODIS_AMZ_EVI2_ANOM</code></li>
+	<li>You can use <code>exploreResults.R</code> to get the computation results in R, either form the container or the host.</li>
 </ol>
 
 
