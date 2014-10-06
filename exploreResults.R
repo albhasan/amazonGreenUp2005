@@ -49,9 +49,6 @@ col_id.from <- 48000# + 4800 * 2
 row_id.from <- 38400# + 4800 * 2
 col_id.to <- col_id.from + 500
 row_id.to <- row_id.from + 500
-  
-
-
 
 resolution <- 4800 # Number of pixels on the x and y direction (per image or HDF)
 tileWidth <- calcTileWidth()

@@ -5,9 +5,9 @@ set no fetch;
 set lang afl;
 
 --Selects the data using spatial (amazon) temporal (JAS 2000-2006) and quality criteria
-store(between(filter(MOD09Q1_SALESKA, time_id % 46 >= 23 and time_id % 46 <= 34 and quality = 4096), 48000, 38400, 0, 52799, 43199, 321), MODIS_AMZ_BQ_JAS);
+store(between(filter(MOD09Q1_SALESKA, time_id % 46 >= 23 and time_id % 46 <= 34 and quality = 4096), 48000, 38400, 0, 67199, 52799, 321), MODIS_AMZ_BQ_JAS);
 
---Compute EVI for each cell
+--Compute EVI for each cell (10000 compensates the MODIS's scale factor)
 store(apply(MODIS_AMZ_BQ_JAS, evi2, 2.5*((nir - red)/(nir + 2.4 * red + (1 * 10000)))), MODIS_AMZ_BQ_JAS_EVI2);
 
 --Calculates EVI2's average and standad deviation JAS 2000 - 2006 excluding 2005

@@ -1,8 +1,8 @@
 #!/bin/bash
-##############################################################
-#INSTALL PYHDF
+echo "##############################################################"
+echo "INSTALL PYHDF"
 #Adapted from https://gist.github.com/1408088.git
-##############################################################
+echo "##############################################################"
 sudo apt-get update
 #sudo apt-get install python2.6-dev
 sudo apt-get install python-numpy python-scipy python-matplotlib ipython ipython-notebook python-pandas python-sympy python-nose libhdf4-dev swig

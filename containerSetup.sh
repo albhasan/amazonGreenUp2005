@@ -101,6 +101,10 @@ while [  $COUNTER -gt 0 ]; do
 	let COUNTER=$(ls -1 /home/scidb/toLoad/ | wc -l)
 done
 #********************************************************
+echo "***** ***** Removing array versions..."
+#********************************************************
+iquery -f "remove_versions(MOD09Q1_SALESKA, 84);"
+#********************************************************
 echo "***** ***** Calculating EVI2 anomalies..."
 #********************************************************
 iquery -f anomalyComputation.afl
