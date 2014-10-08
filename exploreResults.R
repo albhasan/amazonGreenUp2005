@@ -45,46 +45,20 @@ getxyMatrix <- function(colrowid.Matrix, pixelSize){
 ######################################################
 # Worker
 ######################################################
-col_id.from <- 48000# + 4800 * 2
-row_id.from <- 38400# + 4800 * 2
-col_id.to <- col_id.from + 500
-row_id.to <- row_id.from + 500
 
+# Connect to SciDB
+scidbconnect(host = "localhost", port = 49902, username = "scidb", password = "xxxx.xxxx.xxxx")
+
+#Pixel size estimation
 resolution <- 4800 # Number of pixels on the x and y direction (per image or HDF)
 tileWidth <- calcTileWidth()
 pixelSize <- calcPixelSize(resolution, tileWidth)
-# Connect to SciDB
-
-
-
-scidbconnect(host = "localhost", port = 49902, username = "scidb", password = "xxxx.xxxx.xxxx")
-
-
-
 
 # Display array's properties
 str(scidb("MODIS_AMZ_EVI2_ANOM"))
-# Retrieve data
-query <- paste("subarray(project(MODIS_AMZ_EVI2_ANOM, evi_anomaly),", paste(col_id.from, row_id.from, col_id.to, row_id.to, sep = ","), ");")
-evi2.anom <- iquery(query = query, `return` = TRUE, afl = TRUE, iterative = FALSE, n = Inf)
-# Restore indexes' values
-evi2.anom["col_id"] <- evi2.anom["col_id"] + col_id.from
-evi2.anom["row_id"] <- evi2.anom["row_id"] + row_id.from
-# Calculate coords
-xy <- getxyMatrix(cbind(evi2.anom["col_id"], evi2.anom["row_id"]), pixelSize)
-evi2.anom <- cbind(evi2.anom, xy)
-# Create an SpatialPointsDataFrame
-evi2.sp <- SpatialPoints(coords = evi2.anom[, c("x", "y")])
-bbox(evi2.sp)
-evi2.spdf = SpatialPointsDataFrame(evi2.sp, evi2.anom["evi_anomaly"])
+
+# Retrive brazilian borders
 modsin.crs <- CRS("+proj=sinu +lon_0=0 +x_0=0 +y_0=0 +a=6371007.181 +b=6371007.181 +units=m +no_defs ")
-proj4string(evi2.spdf) <- modsin.crs
-# View data
-sd <- sd(unlist(slot(evi2.spdf, "data")))
-breaks <- c(-2, -1.5, -1, 1, 1.5, 2) * sd
-bcolors <- c("#481316", "#E51D24", "#F47E56", "#F7F7B6", "#58B734", "#259B43", "#184621")
-
-
 amazonCountriesNames <- c("Brazil", "Colombia", "Venezuela", "Ecuador", "Peru", "Bolivia", "Guyana", "Suriname", "French Guiana")
 amazonCountries.map <- map("world", amazonCountriesNames, fill = TRUE, col="transparent", plot = FALSE)
 IDs <- sapply(strsplit(amazonCountries.map$names, ":"), function(x) x[1])
@@ -93,8 +67,77 @@ amazonCountriesNames.df <- data.frame(sapply(1:length(amazonCountries.sp), funct
 amazonCountries.spdf <- SpatialPolygonsDataFrame(amazonCountries.sp, amazonCountriesNames.df, match.ID = FALSE)
 amazonPolDov.spdf <- spTransform(amazonCountries.spdf, modsin.crs)
 
-lo <- list(sp.polygons, amazonPolDov.spdf)
-spplot(evi2.spdf, col = col, col.regions = bcolors, at = breaks, pretty = TRUE, sp.layout = lo)
-#lo <- list(sp.points, evi2.spdf)
-#spplot(amazonPolDov.spdf, fill = NULL, sp.layout = lo)
+######################################################
+# Plot a grid mean
+######################################################
+#Whole array indexes
+col_id.from <- 48000
+row_id.from <- 38400
+#col_id.to <- 67199
+#row_id.to <- 52799
 
+#Retrieve data
+regridfactor <- 16
+query <- paste("regrid(MODIS_AMZ_EVI2_ANOM,", regridfactor, ",", regridfactor, ", avg(evi_anomaly) as evi_anomaly_avg)")
+evi2.anom <- iquery(query = query, `return` = TRUE, afl = TRUE, iterative = FALSE, n = Inf)
+
+# Restore indexes' values
+evi2.anom["col_id"] <- col_id.from + (( evi2.anom["col_id"] - col_id.from) * regridfactor) + regridfactor/2
+evi2.anom["row_id"] <- row_id.from + (( evi2.anom["row_id"] - row_id.from) * regridfactor) + regridfactor/2
+
+# Calculate coords
+xy <- getxyMatrix(cbind(evi2.anom["col_id"], evi2.anom["row_id"]), pixelSize * regridfactor)
+evi2.anom <- cbind(evi2.anom, xy)
+
+# Build an SpatialPointsDataFrame
+evi2.sp <- SpatialPoints(coords = evi2.anom[, c("x", "y")])
+bbox(evi2.sp)
+evi2.spdf = SpatialPointsDataFrame(evi2.sp, evi2.anom["evi_anomaly_avg"])
+modsin.crs <- CRS("+proj=sinu +lon_0=0 +x_0=0 +y_0=0 +a=6371007.181 +b=6371007.181 +units=m +no_defs ")
+proj4string(evi2.spdf) <- modsin.crs
+
+# Plot 
+sd <- sd(unlist(slot(evi2.spdf, "data")))
+breaks <- c(-2, -1.5, -1, 1, 1.5, 2) * sd
+bcolors <- c("#481316", "#E51D24", "#F47E56", "#F7F7B6", "#58B734", "#259B43", "#184621")
+lo <- list(sp.polygons, amazonPolDov.spdf, first = FALSE)
+spplot(evi2.spdf, col.regions = bcolors, at = breaks, pretty = TRUE, sp.layout = lo, cuts = 7)
+
+
+######################################################
+# Plot a subarray on the border Brazil-Colombia
+######################################################
+#Subarray indexes
+col_id.from <- 52800
+row_id.from <- 43200
+col_id.to <- col_id.from + 100
+row_id.to <- row_id.from + 100
+
+# Retrieve data
+col <- c(48000, 67199)
+row <- c(38400, 52799)
+(col[2] - col[1] + 1)/4
+(row[2] - row[1] + 1)/4
+query <- paste("subarray(project(MODIS_AMZ_EVI2_ANOM, evi_anomaly),", paste(col_id.from, row_id.from, col_id.to, row_id.to, sep = ","), ");")
+evi2.anom <- iquery(query = query, `return` = TRUE, afl = TRUE, iterative = FALSE, n = Inf)
+
+# Restore indexes' values
+evi2.anom["col_id"] <- evi2.anom["col_id"] + col_id.from
+evi2.anom["row_id"] <- evi2.anom["row_id"] + row_id.from
+
+# Calculate coords
+xy <- getxyMatrix(cbind(evi2.anom["col_id"], evi2.anom["row_id"]), pixelSize)
+evi2.anom <- cbind(evi2.anom, xy)
+
+# Build an SpatialPointsDataFrame
+evi2.sp <- SpatialPoints(coords = evi2.anom[, c("x", "y")])
+bbox(evi2.sp)
+evi2.spdf = SpatialPointsDataFrame(evi2.sp, evi2.anom["evi_anomaly"])
+proj4string(evi2.spdf) <- modsin.crs
+
+# Plot 
+sd <- sd(unlist(slot(evi2.spdf, "data")))
+breaks <- c(-2, -1.5, -1, 1, 1.5, 2) * sd
+bcolors <- c("#481316", "#E51D24", "#F47E56", "#F7F7B6", "#58B734", "#259B43", "#184621")
+lo <- list(sp.polygons, amazonPolDov.spdf, first = FALSE)
+spplot(evi2.spdf, col.regions = bcolors, at = breaks, pretty = TRUE, sp.layout = lo, cuts = 7)
