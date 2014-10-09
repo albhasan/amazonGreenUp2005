@@ -52,7 +52,6 @@ scidbconnect(host = "localhost", port = 49902, username = "scidb", password = "x
 #Pixel size estimation
 resolution <- 4800 # Number of pixels on the x and y direction (per image or HDF)
 tileWidth <- calcTileWidth()
-pixelSize <- calcPixelSize(resolution, tileWidth)
 
 # Display array's properties
 str(scidb("MODIS_AMZ_EVI2_ANOM"))
@@ -70,28 +69,46 @@ amazonPolDov.spdf <- spTransform(amazonCountries.spdf, modsin.crs)
 ######################################################
 # Plot a grid mean
 ######################################################
+
+regridfactor <- 256 # 16
+pixelSize <- calcPixelSize(resolution, tileWidth) * regridfactor
+
 #Whole array indexes
-col_id.from <- 48000
-row_id.from <- 38400
-#col_id.to <- 67199
-#row_id.to <- 52799
+col_id.from <- 48000 / regridfactor
+row_id.from <- 38400 / regridfactor
 
 #Retrieve data
-regridfactor <- 16
 query <- paste("regrid(MODIS_AMZ_EVI2_ANOM,", regridfactor, ",", regridfactor, ", avg(evi_anomaly) as evi_anomaly_avg)")
 evi2.anom <- iquery(query = query, `return` = TRUE, afl = TRUE, iterative = FALSE, n = Inf)
+#cp <- evi2.anom
+#evi2.anom <- cp
+
 
 # Restore indexes' values
-evi2.anom["col_id"] <- col_id.from + (( evi2.anom["col_id"] - col_id.from) * regridfactor) + regridfactor/2
-evi2.anom["row_id"] <- row_id.from + (( evi2.anom["row_id"] - row_id.from) * regridfactor) + regridfactor/2
+evi2.anom["col_id"] <- col_id.from +  evi2.anom["col_id"] - (col_id.from * regridfactor)
+evi2.anom["row_id"] <- row_id.from +  evi2.anom["row_id"] - (row_id.from * regridfactor)
 
 # Calculate coords
-xy <- getxyMatrix(cbind(evi2.anom["col_id"], evi2.anom["row_id"]), pixelSize * regridfactor)
+xy <- getxyMatrix(cbind(colrowid.Matrix = evi2.anom["col_id"], evi2.anom["row_id"]), pixelSize = pixelSize)
 evi2.anom <- cbind(evi2.anom, xy)
 
 # Build an SpatialPointsDataFrame
 evi2.sp <- SpatialPoints(coords = evi2.anom[, c("x", "y")])
 bbox(evi2.sp)
+
+
+
+
+
+#areOver <- over(evi2.sp, SpatialPolygons(slot(amazonPolDov.spdf, "polygons")))
+#areOver[is.na(areOver)] <- FALSE
+#areOver[!is.na(areOver)] <- TRUE
+#plot(evi2.sp[areOver])
+
+
+
+
+
 evi2.spdf = SpatialPointsDataFrame(evi2.sp, evi2.anom["evi_anomaly_avg"])
 modsin.crs <- CRS("+proj=sinu +lon_0=0 +x_0=0 +y_0=0 +a=6371007.181 +b=6371007.181 +units=m +no_defs ")
 proj4string(evi2.spdf) <- modsin.crs
@@ -102,11 +119,12 @@ breaks <- c(-2, -1.5, -1, 1, 1.5, 2) * sd
 bcolors <- c("#481316", "#E51D24", "#F47E56", "#F7F7B6", "#58B734", "#259B43", "#184621")
 lo <- list(sp.polygons, amazonPolDov.spdf, first = FALSE)
 spplot(evi2.spdf, col.regions = bcolors, at = breaks, pretty = TRUE, sp.layout = lo, cuts = 7)
-
+#spplot(evi2.spdf[areOver], col.regions = bcolors, at = breaks, pretty = TRUE, sp.layout = lo, cuts = 7)
 
 ######################################################
 # Plot a subarray on the border Brazil-Colombia
 ######################################################
+pixelSize <- calcPixelSize(resolution, tileWidth)
 #Subarray indexes
 col_id.from <- 52800
 row_id.from <- 43200
@@ -141,3 +159,8 @@ breaks <- c(-2, -1.5, -1, 1, 1.5, 2) * sd
 bcolors <- c("#481316", "#E51D24", "#F47E56", "#F7F7B6", "#58B734", "#259B43", "#184621")
 lo <- list(sp.polygons, amazonPolDov.spdf, first = FALSE)
 spplot(evi2.spdf, col.regions = bcolors, at = breaks, pretty = TRUE, sp.layout = lo, cuts = 7)
+
+
+
+
+
