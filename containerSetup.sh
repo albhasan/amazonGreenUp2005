@@ -29,7 +29,13 @@ ln -s /home/scidb/catalog/main /var/lib/postgresql/8.4/main
 #********************************************************
 echo "***** Installing additional packages..."
 #********************************************************
-Rscript /home/scidb/installPackages.R packages=RCurl,snow,ptw,bitops,mapdata,XML,rgeos,rgdal,MODIS,scidb verbose=0 quiet=0
+Rscript /home/scidb/installPackages.R packages=RCurl,snow,ptw,bitops,mapdata,XML,rgeos,rgdal,raster,scidb verbose=0 quiet=0
+
+
+wget http://download.r-forge.r-project.org/src/contrib/MODIS_0.10-18.tar.gz
+R CMD INSTALL MODIS_0.10-18.tar.gz
+
+
 yes | /home/root/./installParallel.sh
 yes | /home/root/./install_pyhdf.sh
 #********************************************************
