@@ -7,6 +7,15 @@ echo "#########################################################"
 
 SCIDB_CONF_FILE=$1  # scidb_docker_2a.ini
 
+
+
+
+
+#apt-get -qq update && apt-get install --fix-missing -y --force-yes bash gdal-bin
+
+
+
+
 #********************************************************
 echo "***** Update container-user ID to match host-user ID..."
 #********************************************************
@@ -89,8 +98,8 @@ echo "***** ***** Downloading MODIS data..."
 cd ~
 
 
-./downloadData.sh MOD09Q1 005 2000 2006 07.01 09.30 10:13 8:10 1
-#./downloadData.sh MOD09Q1 005 2000 2000 07.01 07.30 10:10 8:8 1
+#./downloadData.sh MOD09Q1 005 2000 2006 07.01 09.30 10:13 8:10 1
+./downloadData.sh MOD09Q1 005 2000 2000 07.01 07.30 10:10 8:8 1
 
 
 git clone http://github.com/albhasan/modis2scidb.git
