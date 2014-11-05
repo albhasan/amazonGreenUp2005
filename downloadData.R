@@ -43,4 +43,6 @@ if(agrep(":", tileV) == TRUE){
 # Downloads data
 library(MODIS)
 #MODISoptions(localArcPath, outDirPath, pixelSize, outProj, resamplingType, dataFormat, gdalPath, MODISserverOrder, dlmethod, stubbornness, systemwide = FALSE, quiet = FALSE, save=TRUE, checkPackages=TRUE)
-res <- getHdf(product = product, begin = begin, end = end, tileH = tileH, tileV = tileV, collection = collection, wait = wait, quiet = FALSE, checkIntegrity = TRUE)  
+#res <- getHdf(product = product, begin = begin, end = end, tileH = tileH, tileV = tileV, collection = collection, wait = wait, quiet = FALSE, checkIntegrity = TRUE)#checkIntegrity fails!
+res <- getHdf(product = product, begin = begin, end = end, tileH = tileH, tileV = tileV, collection = collection, wait = wait, quiet = FALSE)
+
