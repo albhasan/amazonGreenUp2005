@@ -47,7 +47,7 @@ getxyMatrix <- function(colrowid.Matrix, pixelSize){
 ######################################################
 
 # Connect to SciDB
-scidbconnect(host = "localhost", port = 49902, username = "scidb", password = "xxxx.xxxx.xxxx")
+scidbconnect(host = "localhost", port = 49912, username = "scidb", password = "xxxx.xxxx.xxxx")
 
 #Pixel size estimation
 resolution <- 4800 # Number of pixels on the x and y direction (per image or HDF)

@@ -9,10 +9,10 @@
 #
 #PORT MAPPING
 #SERVICE		DEFAULT		MAPPED
-#ssh 			22			49901
-#shim			8083s		49902
-#Postgresql 	5432		49903
-#SciDB			1239		49904
+#ssh 			22			49911
+#shim			8083s		49912
+#Postgresql 	5432		49913
+#SciDB			1239		49914
 
 
 FROM ubuntu:12.04
@@ -75,13 +75,13 @@ RUN apt-get -qq update && apt-get install -y --force-yes \
 
 	
 # Configure SSH
-RUN sed -i 's/22/49901/g' /etc/ssh/sshd_config
+RUN sed -i 's/22/49911/g' /etc/ssh/sshd_config
 RUN echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config
 
 
 # Configure Postgres 
 RUN echo 'host  all all 255.255.0.0/16   md5' >> /etc/postgresql/8.4/main/pg_hba.conf
-RUN sed -i 's/5432/49903/g' /etc/postgresql/8.4/main/postgresql.conf
+RUN sed -i 's/5432/49913/g' /etc/postgresql/8.4/main/postgresql.conf
 
 
 # Add files
@@ -162,8 +162,8 @@ RUN apt-get -qq update && apt-get install --fix-missing -y --force-yes \
 #RUN yes | modis2scidb/./install_pyhdf.sh
 
 	
-EXPOSE 49901
-EXPOSE 49902
+EXPOSE 49911
+EXPOSE 49912
 
 
 CMD    ["/usr/sbin/sshd", "-D"]

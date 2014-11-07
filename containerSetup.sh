@@ -42,9 +42,9 @@ yes | /home/root/./install_pyhdf.sh
 echo "***** Setting up passwordless SSH..."
 #********************************************************
 yes | ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
-sshpass -f /home/scidb/pass.txt ssh-copy-id "root@localhost -p 49901"
-yes | ssh-copy-id -i ~/.ssh/id_rsa.pub  "root@0.0.0.0 -p 49901"
-yes | ssh-copy-id -i ~/.ssh/id_rsa.pub  "root@127.0.0.1 -p 49901"
+sshpass -f /home/scidb/pass.txt ssh-copy-id "root@localhost -p 49911"
+yes | ssh-copy-id -i ~/.ssh/id_rsa.pub  "root@0.0.0.0 -p 49911"
+yes | ssh-copy-id -i ~/.ssh/id_rsa.pub  "root@127.0.0.1 -p 49911"
 #********************************************************
 echo "***** Installing SciDB..."
 #********************************************************
@@ -69,7 +69,7 @@ rm shim_14.8_amd64.deb
 su scidb <<'EOF'
 cd ~ 
 #****************************************************************************************
-sed -i 's/1239/49904/g' ~/.bashrc
+sed -i 's/1239/49914/g' ~/.bashrc
 #****************************************************************************************
 source ~/.bashrc
 #********************************************************
