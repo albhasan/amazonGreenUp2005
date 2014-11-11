@@ -44,5 +44,25 @@ if(agrep(":", tileV) == TRUE){
 library(MODIS)
 #MODISoptions(localArcPath, outDirPath, pixelSize, outProj, resamplingType, dataFormat, gdalPath, MODISserverOrder, dlmethod, stubbornness, systemwide = FALSE, quiet = FALSE, save=TRUE, checkPackages=TRUE)
 #res <- getHdf(product = product, begin = begin, end = end, tileH = tileH, tileV = tileV, collection = collection, wait = wait, quiet = FALSE, checkIntegrity = TRUE)#checkIntegrity fails!
-res <- getHdf(product = product, begin = begin, end = end, tileH = tileH, tileV = tileV, collection = collection, wait = wait, quiet = FALSE)
+#res <- getHdf(product = product, begin = begin, end = end, tileH = tileH, tileV = tileV, collection = collection, wait = wait, quiet = FALSE)
+
+
+
+
+hdfs <- unlist(getHdf(product = product, begin = begin, end = end, tileH = tileH, tileV = tileV, collection = collection, wait = wait, quiet = FALSE))
+
+if(!grepl("not found", system("hdfls"))){
+  for(i in 1:length(hdfs)){
+    hdf <- hdfs[i]
+    res <- system2(command = "hdfls", args = hdf, stderr = TRUE, stdout = TRUE)[1]
+    if(grepl("HDF error", res, fixed = TRUE)){
+      print("********************Corrupted HDF - Trying to dowload again....")
+      filePathParts <- unlist(strsplit(hdf, split = "/"))
+      filename <- filePathParts[length(filePathParts)]
+      file.remove(hdf)
+      getHdf(HdfName = filename)
+    }
+  }
+}
+
 
