@@ -8,6 +8,7 @@ docker rm scidb_amazon1
 docker rmi scidb_amazon_img
 echo "Building a new image..."
 docker build --rm=true --tag="scidb_amazon_img" .
+#docker build --tag="scidb_amazon_img" .
 echo "Launching a new container..."
 docker run -d --name="scidb_amazon1" -p 49911:49911 -p 49912:49912 --expose=49913 --expose=49914 scidb_amazon_img
 
