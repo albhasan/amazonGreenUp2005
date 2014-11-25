@@ -98,8 +98,24 @@ iquery -aq "scan(TEST_ARRAY)"
 echo "***** ***** Downloading MODIS data..."
 #********************************************************
 cd ~
-wget -r -np --retry-connrefused --wait=0.5 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/{1998..2006}
-wget -r -np --retry-connrefused --wait=0.5 --accept 'MOD09Q1.A200[0-6][1-2][0-9][0-9].h1[0-3]v[0-1][089]*' http://e4ftl01.cr.usgs.gov/MOLT/MOD09Q1.005/{2000..2006}.0{7..9}.{0..3}{0..9}/ 
+#wget -r -np --retry-connrefused --wait=0.5 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/{1998..2006}
+wget -r -np --retry-connrefused --wait=0.5 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/1998 & 
+wget -r -np --retry-connrefused --wait=0.5 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/1999 & 
+wget -r -np --retry-connrefused --wait=0.5 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/2000 & 
+wget -r -np --retry-connrefused --wait=0.5 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/2001 & 
+wget -r -np --retry-connrefused --wait=0.5 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/2002 & 
+wget -r -np --retry-connrefused --wait=0.5 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/2003 & 
+wget -r -np --retry-connrefused --wait=0.5 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/2004 & 
+wget -r -np --retry-connrefused --wait=0.5 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/2005 & 
+wget -r -np --retry-connrefused --wait=0.5 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/2006
+#wget -r -np --retry-connrefused --wait=0.5 --accept 'MOD09Q1.A200[0-6][1-2][0-9][0-9].h1[0-3]v[0-1][089]*' http://e4ftl01.cr.usgs.gov/MOLT/MOD09Q1.005/{2000..2006}.0{7..9}.{0..3}{0..9}/ 
+wget -r -np --retry-connrefused --wait=0.5 --accept 'MOD09Q1.A200[0-6][1-2][0-9][0-9].h1[0-3]v[0-1][089]*' http://e4ftl01.cr.usgs.gov/MOLT/MOD09Q1.005/2000.0{7..9}.{0..3}{0..9}/ & 
+wget -r -np --retry-connrefused --wait=0.5 --accept 'MOD09Q1.A200[0-6][1-2][0-9][0-9].h1[0-3]v[0-1][089]*' http://e4ftl01.cr.usgs.gov/MOLT/MOD09Q1.005/2001.0{7..9}.{0..3}{0..9}/ & 
+wget -r -np --retry-connrefused --wait=0.5 --accept 'MOD09Q1.A200[0-6][1-2][0-9][0-9].h1[0-3]v[0-1][089]*' http://e4ftl01.cr.usgs.gov/MOLT/MOD09Q1.005/2002.0{7..9}.{0..3}{0..9}/ & 
+wget -r -np --retry-connrefused --wait=0.5 --accept 'MOD09Q1.A200[0-6][1-2][0-9][0-9].h1[0-3]v[0-1][089]*' http://e4ftl01.cr.usgs.gov/MOLT/MOD09Q1.005/2003.0{7..9}.{0..3}{0..9}/ & 
+wget -r -np --retry-connrefused --wait=0.5 --accept 'MOD09Q1.A200[0-6][1-2][0-9][0-9].h1[0-3]v[0-1][089]*' http://e4ftl01.cr.usgs.gov/MOLT/MOD09Q1.005/2004.0{7..9}.{0..3}{0..9}/ & 
+wget -r -np --retry-connrefused --wait=0.5 --accept 'MOD09Q1.A200[0-6][1-2][0-9][0-9].h1[0-3]v[0-1][089]*' http://e4ftl01.cr.usgs.gov/MOLT/MOD09Q1.005/2005.0{7..9}.{0..3}{0..9}/ & 
+wget -r -np --retry-connrefused --wait=0.5 --accept 'MOD09Q1.A200[0-6][1-2][0-9][0-9].h1[0-3]v[0-1][089]*' http://e4ftl01.cr.usgs.gov/MOLT/MOD09Q1.005/2006.0{7..9}.{0..3}{0..9}/ 
 git clone http://github.com/albhasan/modis2scidb.git
 #********************************************************
 echo "***** ***** Creating load arrays..."
