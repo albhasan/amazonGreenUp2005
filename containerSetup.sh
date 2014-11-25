@@ -156,8 +156,9 @@ done
 #----------------------------------------------------------------------------------------------------------------------
 
 
-python /home/scidb/modis2scidb/hdf2sdbbin.py --log INFO e4ftl01.cr.usgs.gov/MOLT/MOD09Q1.005/ /home/scidb/toLoad/modis/ MOD09Q1
 python /home/scidb/modis2scidb/hdf2sdbbin.py --log INFO /home/scidb/disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/ /home/scidb/toLoad/trmm/ TRMM3B43
+python /home/scidb/modis2scidb/hdf2sdbbin.py --log INFO e4ftl01.cr.usgs.gov/MOLT/MOD09Q1.005/ /home/scidb/toLoad/modis/ MOD09Q1
+
 
 
 
@@ -171,7 +172,7 @@ COUNTER=$(ls -1 /home/scidb/toLoad/ | wc -l)
 while [  $COUNTER -gt 0 ]; do
 	echo "Waiting for finishing uploading files to SciDB. Files to go... $COUNTER"
 	sleep 60
-	let COUNTER=$(ls -1 /home/scidb/toLoad/ | wc -l)
+	let COUNTER=$(ls -1 /home/scidb/toLoad/modis | wc -l)
 done
 #********************************************************
 echo "***** ***** Removing array versions..."
