@@ -11,7 +11,7 @@
 #SERVICE		DEFAULT		MAPPED
 #ssh 			22			49911
 #shim			8083s		49912
-#Postgresql 	5432		49913
+#Postgresql	 	5432		49913
 #SciDB			1239		49914
 
 
@@ -53,10 +53,16 @@ RUN mkdir /var/run/sshd
 RUN mkdir /home/scidb/data
 RUN mkdir /home/scidb/catalog
 RUN mkdir /home/scidb/toLoad
+RUN mkdir /home/scidb/toLoad/modis
+RUN mkdir /home/scidb/toLoad/trmm
+
 
 # install SCIDB
 RUN echo "deb http://cran.r-project.org/bin/linux/ubuntu precise/" >> /etc/apt/sources.list
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
+RUN apt-get -qq update && apt-get install -y --force-yes \
+	r-base \
+	r-cran-spatial
 
 
 # Configure SSH
@@ -70,33 +76,38 @@ RUN sed -i 's/5432/49913/g' /etc/postgresql/8.4/main/postgresql.conf
 
 
 # Add files
-ADD containerSetup.sh 		/home/root/containerSetup.sh
-ADD conf	 				/home/root/conf
-ADD iquery.conf 			/home/scidb/.config/scidb/iquery.conf
-ADD startScidb.sh 			/home/scidb/startScidb.sh
-ADD stopScidb.sh 			/home/scidb/stopScidb.sh
-ADD scidb_docker_1.ini		/home/scidb/scidb_docker_1.ini
-ADD scidb_docker_2a.ini		/home/scidb/scidb_docker_2a.ini
-ADD scidb_docker_2b.ini		/home/scidb/scidb_docker_2b.ini
-ADD scidb_docker_2.ini		/home/scidb/scidb_docker_2.ini
-ADD scidb_docker_4.ini		/home/scidb/scidb_docker_4.ini
-ADD scidb_docker_8.ini		/home/scidb/scidb_docker_8.ini
-ADD installParallel.sh 		/home/root/installParallel.sh
-ADD install_pyhdf.sh		/home/root/install_pyhdf.sh
-ADD hdf2bin.sh 				/home/scidb/hdf2bin.sh
+ADD containerSetup.sh 		/root/containerSetup.sh
+ADD conf	 		/root/conf
+#ADD install_pyhdf.sh           /root/install_pyhdf.sh
+ADD installParallel.sh		/root/installParallel.sh
+ADD installBoost_1570.sh	/root/installBoost_1570.sh
+ADD installGribModis2SciDB.sh	/root/installGribModis2SciDB.sh
+ADD hdf2bin.sh                  /home/scidb/hdf2bin.sh
+ADD iquery.conf 		/home/scidb/.config/scidb/iquery.conf
+ADD startScidb.sh 		/home/scidb/startScidb.sh
+ADD stopScidb.sh 		/home/scidb/stopScidb.sh
+ADD installPackages.R 		/home/scidb/installPackages.R
+ADD hdf2bin.sh 			/home/scidb/hdf2bin.sh
 ADD anomalyComputation.afl 	/home/scidb/anomalyComputation.afl
+ADD scidb_docker_1.ini          /home/scidb/scidb_docker_1.ini
+ADD scidb_docker_2a.ini         /home/scidb/scidb_docker_2a.ini
+ADD scidb_docker_2b.ini         /home/scidb/scidb_docker_2b.ini
+ADD scidb_docker_2.ini          /home/scidb/scidb_docker_2.ini
+ADD scidb_docker_4.ini          /home/scidb/scidb_docker_4.ini
+ADD scidb_docker_8.ini          /home/scidb/scidb_docker_8.ini
 
 
-RUN chown root:root \ 
-	/home/root/*.sh \ 
-	/home/root/conf
+
+RUN chown -R root:root \ 
+	/root/*.sh \ 
+	/root/conf
 
 
-RUN chown scidb:scidb /home/scidb/*
+RUN chown -R scidb:scidb /home/scidb/*
 
 
 RUN chmod +x \ 
-	/home/root/*.sh \ 
+	/root/*.sh \ 
 	/home/scidb/*.sh 
 
 

@@ -2,10 +2,26 @@
 export LC_ALL="en_US.UTF-8"
 echo "#########################################################"
 echo "SET UP OF AMAZON GREEN UP-SCIDB 14 ON A DOCKER CONTAINER"
-# ./containerSetup.sh scidb_docker_2a.ini
+# ./containerSetup.sh scidb_docker_8.ini
 echo "#########################################################"
 
-SCIDB_CONF_FILE=$1  # scidb_docker_2a.ini
+SCIDB_CONF_FILE=$1  # scidb_docker_8.ini
+
+
+apt-get -qq update && apt-get install --fix-missing -y --force-yes \
+	apt-utils \
+	build-essential \
+	cmake \
+	libgdal-dev \
+	gdal-bin \
+	g++ \
+	python-dev \
+	autotools-dev \
+	gfortran \
+	libicu-dev \
+	libbz2-dev \
+	libzip-dev
+
 
 #********************************************************
 echo "***** Update container-user ID to match host-user ID..."
@@ -29,15 +45,11 @@ ln -s /home/scidb/catalog/main /var/lib/postgresql/8.4/main
 #********************************************************
 echo "***** Installing additional packages..."
 #********************************************************
-Rscript /home/scidb/installPackages.R packages=RCurl,snow,ptw,bitops,mapdata,XML,rgeos,rgdal,raster,scidb verbose=0 quiet=0
-
-
-wget http://download.r-forge.r-project.org/src/contrib/MODIS_0.10-18.tar.gz
-R CMD INSTALL MODIS_0.10-18.tar.gz
-
-
-yes | /home/root/./installParallel.sh
-yes | /home/root/./install_pyhdf.sh
+Rscript /home/scidb/installPackages.R packages=scidb verbose=0 quiet=0
+yes | /root/./installParallel.sh
+yes | /root/./installBoost_1570.sh 
+yes | /root/./installGribModis2SciDB.sh
+ldconfig
 #********************************************************
 echo "***** Setting up passwordless SSH..."
 #********************************************************
@@ -67,10 +79,9 @@ rm shim_14.8_amd64.deb
 #----------------
 #sudo su scidb
 su scidb <<'EOF'
+export LC_ALL="en_US.UTF-8"
 cd ~ 
-#****************************************************************************************
 sed -i 's/1239/49914/g' ~/.bashrc
-#****************************************************************************************
 source ~/.bashrc
 #********************************************************
 echo "***** ***** Starting SciDB..."
@@ -87,16 +98,56 @@ iquery -aq "scan(TEST_ARRAY)"
 echo "***** ***** Downloading MODIS data..."
 #********************************************************
 cd ~
-
-
-./downloadData.sh MOD09Q1 005 2000 2006 07.01 09.30 10:13 8:10 1
-#./downloadData.sh MOD09Q1 005 2000 2000 07.01 07.30 10:10 8:8 1
-
-
+wget -r -np --retry-connrefused --wait=0.5 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/{1998..2006}
+wget -r -np --retry-connrefused --wait=0.5 --accept 'MOD09Q1.A200[0-6][1-2][0-9][0-9].h1[0-3]v[0-1][089]*' http://e4ftl01.cr.usgs.gov/MOLT/MOD09Q1.005/{2000..2006}.0{7..9}.{0..3}{0..9}/ 
 git clone http://github.com/albhasan/modis2scidb.git
+#********************************************************
+echo "***** ***** Creating load arrays..."
+#********************************************************
 iquery -q "CREATE ARRAY MOD09Q1_SALESKA <red:int16, nir:int16, quality:uint16> [col_id=48000:67199,1014,5,row_id=38400:52799,1014,5,time_id=0:9200,1,0];"
-python /home/scidb/modis2scidb/checkFolder.py --log INFO /home/scidb/toLoad/ /home/scidb/modis2scidb/ MOD09Q1_SALESKA &
-/home/scidb/./hdf2bin.sh /home/scidb/MODIS_ARC/MODIS/MOD09Q1.005/ 2000 2006 10 13 8 10 R-MODIS /home/scidb/ /home/scidb/toLoad/ INFO
+iquery -q "CREATE ARRAY TRMM_3B43_SALESKA <precipitation:float, relativeError:float, gaugeRelativeWeighting:int8> [col_id=0:399,512,0,row_id=0:1439,512,0,time_id=0:9200,1,0];"
+#********************************************************
+echo "***** ***** Loading data to arrays..."
+#********************************************************
+python /home/scidb/modis2scidb/checkFolder.py --log INFO /home/scidb/toLoad/modis/ /home/scidb/modis2scidb/ MOD09Q1_SALESKA MOD09Q1 &
+python /home/scidb/modis2scidb/checkFolder.py --log INFO /home/scidb/toLoad/trmm/ /home/scidb/modis2scidb/ TRMM_3B43_SALESKA TRMM_3B43 &
+
+
+
+#----------------------------------------------------------------------------------------------------------------------
+#DID GRibeiro fix the bug?
+# GAMBIADA - remove dots from paths
+#cd /home/scidb/e4ftl01crusgsgov/MOLT/MOD09Q1005
+#mv /home/scidb/e4ftl01.cr.usgs.gov /home/scidb/e4ftl01crusgsgov
+#mv /home/scidb/e4ftl01crusgsgov/MOLT/MOD09Q1.005 /home/scidb/e4ftl01crusgsgov/MOLT/MOD09Q1005
+#for dir in /home/scidb/e4ftl01crusgsgov/MOLT/MOD09Q1005/*/
+#do
+#    dir=${dir%*/}
+#    mv ${dir} ${dir//./}
+#done
+#mv /home/scidb/disc2.nascom.nasa.gov /home/scidb/disc2nascomnasagov
+#----------------------------------------------------------------------------------------------------------------------
+
+#----------------------------------------------------------------------------------------------------------------------
+# WORKAROUND - Change the TRMM file names for enabling the use of modis2scidb tool
+find /home/scidb/disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43 -type f -name '*.HDF'| while read FN; do
+  DFN=$(dirname "$FN")
+  BFN=$(basename "$FN")
+  NFN=TRMM${BFN}
+  NFNN=${NFN::-5}h00v00.000.7.hdf
+  mv "$FN" "$DFN/$NFN"
+done
+#----------------------------------------------------------------------------------------------------------------------
+
+
+python /home/scidb/modis2scidb/hdf2sdbbin.py --log INFO e4ftl01.cr.usgs.gov/MOLT/MOD09Q1.005/ /home/scidb/toLoad/modis/ MOD09Q1
+python /home/scidb/modis2scidb/hdf2sdbbin.py --log INFO /home/scidb/disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/ /home/scidb/toLoad/trmm/ TRMM3B43
+
+
+
+
+
+
 #********************************************************
 echo "***** ***** Waiting for finishing uploading files to SciDB..."
 #********************************************************
@@ -113,10 +164,13 @@ iquery -f "remove_versions(MOD09Q1_SALESKA, 84);"
 #********************************************************
 echo "***** ***** Calculating EVI2 anomalies..."
 #********************************************************
+#TODO: PROCESS RAIN, includes traspose, resampling coordinte transformation---------------------------------------------
 iquery -f anomalyComputation.afl
 rm /home/scidb/pass.txt
 EOF
 #----------------
 #********************************************************
-echo "***** Amazon Green-up - SciDB setup finished sucessfully!"
+echo "***** Amazon Green-up - SciDB setup finished "
 #********************************************************
+	
+
