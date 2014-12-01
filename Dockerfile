@@ -95,6 +95,8 @@ ADD scidb_docker_2b.ini         /home/scidb/scidb_docker_2b.ini
 ADD scidb_docker_2.ini          /home/scidb/scidb_docker_2.ini
 ADD scidb_docker_4.ini          /home/scidb/scidb_docker_4.ini
 ADD scidb_docker_8.ini          /home/scidb/scidb_docker_8.ini
+ADD scidb_docker_16.ini          /home/scidb/scidb_docker_16.ini
+ADD scidb_docker_32.ini          /home/scidb/scidb_docker_32.ini
 
 
 

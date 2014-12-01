@@ -5,6 +5,11 @@ echo "SET UP OF AMAZON GREEN UP-SCIDB 14 ON A DOCKER CONTAINER"
 # ./containerSetup.sh scidb_docker_8.ini
 echo "#########################################################"
 
+
+if [ "$#" -ne 1 ]; then
+    echo "Illegal number of parameters"
+	exit 1
+fi
 SCIDB_CONF_FILE=$1  # scidb_docker_8.ini
 
 
@@ -72,7 +77,7 @@ cd ~
 wget http://paradigm4.github.io/shim/shim_14.8_amd64.deb
 yes | gdebi -q shim_14.8_amd64.deb
 rm /var/lib/shim/conf
-mv /home/root/conf /var/lib/shim/conf
+mv /root/conf /var/lib/shim/conf
 rm shim_14.8_amd64.deb
 /etc/init.d/shimsvc stop
 /etc/init.d/shimsvc start
@@ -98,25 +103,13 @@ iquery -aq "scan(TEST_ARRAY)"
 echo "***** ***** Downloading MODIS data..."
 #********************************************************
 cd ~
-#wget -r -np --retry-connrefused --wait=0.5 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/{1998..2006}
-wget -r -np --retry-connrefused --wait=0.5 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/1998 & 
-wget -r -np --retry-connrefused --wait=0.5 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/1999 & 
-wget -r -np --retry-connrefused --wait=0.5 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/2000 & 
-wget -r -np --retry-connrefused --wait=0.5 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/2001 & 
-wget -r -np --retry-connrefused --wait=0.5 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/2002 & 
-wget -r -np --retry-connrefused --wait=0.5 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/2003 & 
-wget -r -np --retry-connrefused --wait=0.5 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/2004 & 
-wget -r -np --retry-connrefused --wait=0.5 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/2005 & 
-wget -r -np --retry-connrefused --wait=0.5 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/2006
-#wget -r -np --retry-connrefused --wait=0.5 --accept 'MOD09Q1.A200[0-6][1-2][0-9][0-9].h1[0-3]v[0-1][089]*' http://e4ftl01.cr.usgs.gov/MOLT/MOD09Q1.005/{2000..2006}.0{7..9}.{0..3}{0..9}/ 
-wget -r -np --retry-connrefused --wait=0.5 --accept 'MOD09Q1.A200[0-6][1-2][0-9][0-9].h1[0-3]v[0-1][089]*' http://e4ftl01.cr.usgs.gov/MOLT/MOD09Q1.005/2000.0{7..9}.{0..3}{0..9}/ & 
-wget -r -np --retry-connrefused --wait=0.5 --accept 'MOD09Q1.A200[0-6][1-2][0-9][0-9].h1[0-3]v[0-1][089]*' http://e4ftl01.cr.usgs.gov/MOLT/MOD09Q1.005/2001.0{7..9}.{0..3}{0..9}/ & 
-wget -r -np --retry-connrefused --wait=0.5 --accept 'MOD09Q1.A200[0-6][1-2][0-9][0-9].h1[0-3]v[0-1][089]*' http://e4ftl01.cr.usgs.gov/MOLT/MOD09Q1.005/2002.0{7..9}.{0..3}{0..9}/ & 
-wget -r -np --retry-connrefused --wait=0.5 --accept 'MOD09Q1.A200[0-6][1-2][0-9][0-9].h1[0-3]v[0-1][089]*' http://e4ftl01.cr.usgs.gov/MOLT/MOD09Q1.005/2003.0{7..9}.{0..3}{0..9}/ & 
-wget -r -np --retry-connrefused --wait=0.5 --accept 'MOD09Q1.A200[0-6][1-2][0-9][0-9].h1[0-3]v[0-1][089]*' http://e4ftl01.cr.usgs.gov/MOLT/MOD09Q1.005/2004.0{7..9}.{0..3}{0..9}/ & 
-wget -r -np --retry-connrefused --wait=0.5 --accept 'MOD09Q1.A200[0-6][1-2][0-9][0-9].h1[0-3]v[0-1][089]*' http://e4ftl01.cr.usgs.gov/MOLT/MOD09Q1.005/2005.0{7..9}.{0..3}{0..9}/ & 
-wget -r -np --retry-connrefused --wait=0.5 --accept 'MOD09Q1.A200[0-6][1-2][0-9][0-9].h1[0-3]v[0-1][089]*' http://e4ftl01.cr.usgs.gov/MOLT/MOD09Q1.005/2006.0{7..9}.{0..3}{0..9}/ 
-git clone http://github.com/albhasan/modis2scidb.git
+parallel -j 2 --no-notice wget -r -np --retry-connrefused --wait=4 --tries=50 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/{1}/{2} ::: {1998..2006} ::: {182..246}
+parallel -j 8 --no-notice wget -r -np --retry-connrefused --wait=1 --accept 'MOD09Q1.A200[0-6][1-2][0-9][0-9].h1[0-3]v[0-1][089]*' http://e4ftl01.cr.usgs.gov/MOLT/MOD09Q1.005/{1}.0{2}.{0..3}{0..9}/ ::: {2000..2006} ::: {7..9}
+#parallel -j 2 --no-notice wget -r -np --retry-connrefused --wait=2 --tries=30 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/{1}/{2} ::: {1998..1998} ::: {182..246}
+#parallel -j 8 --no-notice wget -r -np --retry-connrefused --wait=1 --accept 'MOD09Q1.A20001[0-9][0-9].h10v08*' http://e4ftl01.cr.usgs.gov/MOLT/MOD09Q1.005/{1}.0{2}.0{0..9}/ ::: {2000..2001} ::: {7..8}
+
+#TODO: Validate the number of downloaded files
+
 #********************************************************
 echo "***** ***** Creating load arrays..."
 #********************************************************
@@ -125,24 +118,9 @@ iquery -q "CREATE ARRAY TRMM_3B43_SALESKA <precipitation:float, relativeError:fl
 #********************************************************
 echo "***** ***** Loading data to arrays..."
 #********************************************************
-python /home/scidb/modis2scidb/checkFolder.py --log INFO /home/scidb/toLoad/modis/ /home/scidb/modis2scidb/ MOD09Q1_SALESKA MOD09Q1 &
-python /home/scidb/modis2scidb/checkFolder.py --log INFO /home/scidb/toLoad/trmm/ /home/scidb/modis2scidb/ TRMM_3B43_SALESKA TRMM_3B43 &
-
-
-
-#----------------------------------------------------------------------------------------------------------------------
-#DID GRibeiro fix the bug?
-# GAMBIADA - remove dots from paths
-#cd /home/scidb/e4ftl01crusgsgov/MOLT/MOD09Q1005
-#mv /home/scidb/e4ftl01.cr.usgs.gov /home/scidb/e4ftl01crusgsgov
-#mv /home/scidb/e4ftl01crusgsgov/MOLT/MOD09Q1.005 /home/scidb/e4ftl01crusgsgov/MOLT/MOD09Q1005
-#for dir in /home/scidb/e4ftl01crusgsgov/MOLT/MOD09Q1005/*/
-#do
-#    dir=${dir%*/}
-#    mv ${dir} ${dir//./}
-#done
-#mv /home/scidb/disc2.nascom.nasa.gov /home/scidb/disc2nascomnasagov
-#----------------------------------------------------------------------------------------------------------------------
+git clone http://github.com/albhasan/modis2scidb.git
+python /home/scidb/modis2scidb/checkFolder.py --log DEBUG /home/scidb/toLoad/modis/ /home/scidb/modis2scidb/ MOD09Q1_SALESKA MOD09Q1 &
+python /home/scidb/modis2scidb/checkFolder.py --log DEBUG /home/scidb/toLoad/trmm/ /home/scidb/modis2scidb/ TRMM_3B43_SALESKA TRMM_3B43 &
 
 #----------------------------------------------------------------------------------------------------------------------
 # WORKAROUND - Change the TRMM file names for enabling the use of modis2scidb tool
@@ -150,34 +128,33 @@ find /home/scidb/disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43 -type f -
   DFN=$(dirname "$FN")
   BFN=$(basename "$FN")
   NFN=TRMM${BFN}
-  NFNN=${NFN::-5}h00v00.000.7.hdf
-  mv "$FN" "$DFN/$NFN"
+  SIZE=${#BFN}
+  if [ $SIZE = 19 ]; then
+    NFNN=${NFN::-5}h00v00.000.7.hdf
+  fi
+  if [ $SIZE = 20 ]; then
+    NFNN=${NFN::-6}h00v00.000.7.hdf
+  fi
+  mv "$FN" "$DFN/$NFNN"
 done
 #----------------------------------------------------------------------------------------------------------------------
 
-
-python /home/scidb/modis2scidb/hdf2sdbbin.py --log INFO /home/scidb/disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/ /home/scidb/toLoad/trmm/ TRMM3B43
-python /home/scidb/modis2scidb/hdf2sdbbin.py --log INFO e4ftl01.cr.usgs.gov/MOLT/MOD09Q1.005/ /home/scidb/toLoad/modis/ MOD09Q1
-
-
-
-
-
-
-
+find /home/scidb/disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/ -type f -name '*.hdf' -print | parallel -j +0 --no-notice --xapply python /home/scidb/modis2scidb/hdf2sdbbin.py --log DEBUG {} /home/scidb/toLoad/trmm/ TRMM3B43
+find /home/scidb/e4ftl01.cr.usgs.gov/MOLT/MOD09Q1.005/ -type f -name '*.hdf' -print | parallel -j +0 --no-notice --xapply python /home/scidb/modis2scidb/hdf2sdbbin.py --log DEBUG {} /home/scidb/toLoad/modis/ MOD09Q1
 #********************************************************
 echo "***** ***** Waiting for finishing uploading files to SciDB..."
 #********************************************************
-COUNTER=$(ls -1 /home/scidb/toLoad/ | wc -l)
+
+COUNTER=$(find /home/scidb/toLoad/ -type f -name '*.sdbbin' -print | wc -l)
 while [  $COUNTER -gt 0 ]; do
 	echo "Waiting for finishing uploading files to SciDB. Files to go... $COUNTER"
 	sleep 60
-	let COUNTER=$(ls -1 /home/scidb/toLoad/modis | wc -l)
+	let COUNTER=$(find /home/scidb/toLoad/ -type f -name '*.sdbbin' -print | wc -l)
 done
 #********************************************************
 echo "***** ***** Removing array versions..."
 #********************************************************
-iquery -f "remove_versions(MOD09Q1_SALESKA, 84);"
+#TODO: iquery -f "remove_versions(MOD09Q1_SALESKA, 84);" ------------------------------------------------------
 #********************************************************
 echo "***** ***** Calculating EVI2 anomalies..."
 #********************************************************
@@ -189,5 +166,6 @@ EOF
 #********************************************************
 echo "***** Amazon Green-up - SciDB setup finished "
 #********************************************************
-	
+
+
 
