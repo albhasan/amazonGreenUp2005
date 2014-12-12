@@ -66,9 +66,9 @@ yes | ssh-copy-id -i ~/.ssh/id_rsa.pub  "root@127.0.0.1 -p 49911"
 echo "***** Installing SciDB..."
 #********************************************************
 cd ~ 
-wget https://github.com/Paradigm4/deployment/archive/14.8.zip
-unzip 14.8.zip
-cd /root/deployment-14.8/cluster_install
+wget https://github.com/Paradigm4/deployment/archive/master.zip
+unzip master.zip
+cd /root/deployment-master/cluster_install
 yes | ./cluster_install -s /home/scidb/$SCIDB_CONF_FILE
 #********************************************************
 echo "***** Installing SHIM..."
@@ -111,6 +111,12 @@ parallel -j 8 --no-notice wget -r -np --retry-connrefused --wait=1 --accept 'MOD
 #TODO: Validate the number of downloaded files
 
 #********************************************************
+echo "***** ***** Downloading required scripts..."
+#********************************************************
+git clone http://github.com/albhasan/modis2scidb.git
+git clone http://github.com/albhasan/scidb_geoTrans.git
+iquery -aq "load_module('/home/scidb/scidb_geoTrans/geoTransformation.txt')"
+#********************************************************
 echo "***** ***** Creating load arrays..."
 #********************************************************
 iquery -q "CREATE ARRAY MOD09Q1_SALESKA <red:int16, nir:int16, quality:uint16> [col_id=48000:67199,1014,5,row_id=38400:52799,1014,5,time_id=0:9200,1,0];"
@@ -118,7 +124,6 @@ iquery -q "CREATE ARRAY TRMM_3B43_SALESKA <precipitation:float, relativeError:fl
 #********************************************************
 echo "***** ***** Loading data to arrays..."
 #********************************************************
-git clone http://github.com/albhasan/modis2scidb.git
 python /home/scidb/modis2scidb/checkFolder.py --log DEBUG /home/scidb/toLoad/modis/ /home/scidb/modis2scidb/ MOD09Q1_SALESKA MOD09Q1 &
 python /home/scidb/modis2scidb/checkFolder.py --log DEBUG /home/scidb/toLoad/trmm/ /home/scidb/modis2scidb/ TRMM_3B43_SALESKA TRMM_3B43 &
 
@@ -154,11 +159,25 @@ done
 #********************************************************
 echo "***** ***** Removing array versions..."
 #********************************************************
-#TODO: iquery -f "remove_versions(MOD09Q1_SALESKA, 84);" ------------------------------------------------------
+MOD09Q1_SALESKA_NVERSION=$(iquery -aq "versions(MOD09Q1_SALESKA);" | wc -l)
+let MOD09Q1_SALESKA_NVERSION=$(($MOD09Q1_SALESKA_NVERSION - 2))
+IQUERYCMD="iquery -aq \"remove_versions(MOD09Q1_SALESKA, $MOD09Q1_SALESKA_NVERSION);\""
+eval $IQUERYCMD
+TRMM_SALESKA_NVERSION=$(iquery -aq "versions(TRMM_3B43_SALESKA);" | wc -l)
+let TRMM_SALESKA_NVERSION=$(($TRMM_SALESKA_NVERSION - 2))
+IQUERYCMD="iquery -aq \"remove_versions(TRMM_3B43_SALESKA, $TRMM_SALESKA_NVERSION);\""
+eval $IQUERYCMD
 #********************************************************
-echo "***** ***** Calculating EVI2 anomalies..."
+echo "***** ***** Re-arrange TRMM..."
+# TRMM data is not aligned
 #********************************************************
-#TODO: PROCESS RAIN, includes traspose, resampling coordinte transformation---------------------------------------------
+#TODO: Is there a better way to do a Reverse-transpose-slice? - http://www.scidb.org/forum/viewtopic.php?f=11&t=1495
+iquery -naq "store(redimension(attribute_rename(project(apply(unpack(TRMM_3B43_SALESKA, tmpId), ncol_id, int64(abs(row_id - 1439)), nrow_id, col_id + 0, ntime_id, time_id + 0), ncol_id, nrow_id, ntime_id, precipitation, relativeError, gaugeRelativeWeighting), ncol_id, col_id, nrow_id, row_id, ntime_id, time_id), <precipitation:float,relativeError:float,gaugeRelativeWeighting:int8> [col_id=0:1439,512,0,row_id=0:399,512,0,time_id=0:9200,1,0]), TRMM_3B43_SALESKA_FLIP);"
+iquery -naq "remove(TRMM_3B43_SALESKA);"
+iquery -naq "rename(TRMM_3B43_SALESKA_FLIP, TRMM_3B43_SALESKA);"
+#********************************************************
+echo "***** ***** Calculating EVI2-Rain anomalies..."
+#********************************************************
 iquery -f anomalyComputation.afl
 rm /home/scidb/pass.txt
 EOF
@@ -166,6 +185,3 @@ EOF
 #********************************************************
 echo "***** Amazon Green-up - SciDB setup finished "
 #********************************************************
-
-
-

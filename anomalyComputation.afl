@@ -1,13 +1,12 @@
 set no fetch;
 set lang afl;
 
---Arrange TRMM data
-store(redimension(attribute_rename(project(apply(unpack(TRMM_3B43_SALESKA, tmpId), ncol_id, int64(abs(row_id - 1439)), nrow_id, col_id + 0, ntime_id, time_id + 0), ncol_id, nrow_id, ntime_id, precipitation, relativeError, gaugeRelativeWeighting), ncol_id, col_id, nrow_id, row_id, ntime_id, time_id), <precipitation:float,relativeError:float,gaugeRelativeWeighting:int8> [col_id=0:1439,512,0,row_id=0:399,512,0,time_id=0:9200,1,0]), TRMM_3B43_SALESKA_FLIP);
-remove(TRMM_3B43_SALESKA);
-rename(TRMM_3B43_SALESKA_FLIP, TRMM_3B43_SALESKA);
 
---Selects the data using spatial (amazon) temporal (JAS 2000-2006) and quality criteria. NOTE the relative error
-store(between(filter(TRMM_3B43_SALESKA, time_id % 12 >= 6 and time_id % 12 <= 8 and relativeError < 1.00), 380, 162, 0, 555, 279, 107), TRMM_AMZ_JAS);
+--Selects the data using:
+	--spatial: TRMM ids overlapping AMAZON's MODIS tiles
+	--temporal 1998-2006
+	--quality: NOTE the relative error
+store(between(filter(TRMM_3B43_SALESKA, time_id % 12 >= 6 and time_id % 12 <= 8 and relativeError < 1.00), 380, 160, 0, 561, 280, 107), TRMM_AMZ_JAS);
 
 --Calculates PRECIPITATION average and standard deviation JAS 1998 - 2006 excluding 2005
 store(aggregate(filter(TRMM_AMZ_JAS, time_id < 90 or time_id > 92), avg(precipitation) as precipitation_avg_jas_2000_2006, stdev(precipitation) as precipitation_stdev_jas_2000_2006, col_id, row_id), TRMM_AMZ_AVG_1998_2006);
@@ -18,8 +17,14 @@ store(aggregate(filter(TRMM_AMZ_JAS, time_id >= 90 and time_id <= 92), avg(preci
 --Join
 store(join(TRMM_AMZ_AVG_1998_2006, TRMM_AMZ_AVG_2005), TRMM_AMZ_COMP);
 
---Calculate Anomalies
+--Calculate anomalies
 store(apply(TRMM_AMZ_COMP, precipitation_anomaly, (precipitation_avg_jas_2005 - precipitation_avg_jas_2000_2006)/precipitation_stdev_jas_2000_2006), TRMM_AMZ_ANOM);
+
+--GILBERTO:
+--	Build a polygon around the pixel
+--	Count the number of M0D09Q1 falling into each polygon
+
+
 
 
 
@@ -28,6 +33,10 @@ remove(TRMM_AMZ_JAS);
 remove(TRMM_AMZ_AVG_1998_2006);
 remove(TRMM_AMZ_AVG_2005);
 remove(TRMM_AMZ_COMP);
+--remove(TRMM_AMZ_ANOM)
+
+
+
 
 --***********************************************************************************************
 --EVI2 ANOMALY COMPUTATION
@@ -40,7 +49,7 @@ store(between(filter(MOD09Q1_SALESKA, time_id % 46 >= 23 and time_id % 46 <= 34 
 store(apply(MODIS_AMZ_BQ_JAS, evi2, 2.5*((nir - red)/(nir + 2.4 * red + (1 * 10000)))), MODIS_AMZ_BQ_JAS_EVI2);
 
 --Calculate EVI2's average and standard deviation JAS 2000 - 2006 excluding 2005
-store(aggregate(filter(TRMM_AMZ_JAS, time_id < 90 or time_id > 92), avg(precipitation) as precipitation_avg_jas_2000_2006, stdev(precipitation) as precipitation_stdev_jas_2000_2006, col_id, row_id), TRMM_AMZ_AVG_1998_2006);
+store(aggregate(filter(MODIS_AMZ_BQ_JAS_EVI2, time_id < 253 or time_id > 264), avg(evi2) as evi2_avg_jas_2000_2006, stdev(evi2) as evi2_stdev_jas_2000_2006, col_id, row_id), MODIS_AMZ_BQ_JAS_EVI2_AVG_2000_2006);
 
 --Calculate EVI2's average JAS 2005
 store(aggregate(filter(MODIS_AMZ_BQ_JAS_EVI2, time_id >= 253 or time_id <= 264), avg(evi2) as evi2_avg_jas_2005, col_id, row_id), MODIS_AMZ_BQ_JAS_EVI2_AVG_2005);
@@ -51,6 +60,26 @@ store(join(MODIS_AMZ_BQ_JAS_EVI2_AVG_2000_2006, MODIS_AMZ_BQ_JAS_EVI2_AVG_2005),
 --Calculate Anomalies
 store(apply(MODIS_AMZ_EVI2_COMP, evi_anomaly, (evi2_avg_jas_2005 - evi2_avg_jas_2000_2006)/evi2_stdev_jas_2000_2006), MODIS_AMZ_EVI2_ANOM);
 
+--Spatial join to TRMM
+--		Prepare an array with MODIS SINUSOIDAL coordinates and transform them to WGS84
+store(project(apply(MODIS_AMZ_EVI2_ANOM, xModSin, id2coord(col_id, 1, 231.656358263889, -20014993.5258209), yModSin, id2coord(row_id, -1, 231.656358263889, -10007438.8488209)), xModSin, yModSin), MODSIN);
+store(apply(MODSIN, lonSphericRAD, sinusoidal2sphericLON(xModSin, sinusoidal2sphericLAT(yModSin, 6371007.181), 6371007.181, 0), latSphericRAD, sinusoidal2sphericLAT(yModSin, 6371007.181)), MODSIN_SPHERIC);
+store(apply(MODSIN_SPHERIC, xGeocen, spheric2geocentricX(6371007.181, lonSphericRAD, latSphericRAD), yGeocen, spheric2geocentricY(6371007.181, lonSphericRAD, latSphericRAD), zGeocen, spheric2geocentricZ(6371007.181, latSphericRAD)), MODSIN_SPHERIC_GEOCEN);
+store(apply(MODSIN_SPHERIC_GEOCEN, lonWGS84DD, rad2dd(geocentric2ellipsoidalLON(xGeocen, yGeocen)), latWGS84DD, rad2dd(geocentric2ellipsoidalLAT(6378137, 1/298.257223563, xGeocen, yGeocen, zGeocen))), MODSIN_SPHERIC_GEOCEN_WGS84);
+
+
+
+--		Creates a lookup array with the TRMM ids and gets the TRMM data
+store(project(apply(MODSIN_SPHERIC_GEOCEN_WGS84, TRMM_col_id, int64(coord2id(lonWGS84DD, 1, 0.25, -179.875)), TRMM_row_id, int64(coord2id(latWGS84DD, -1, 0.25, -49.875))), TRMM_col_id, TRMM_row_id), LU_TRMM_id);
+store(lookup(LU_TRMM_id, TRMM_AMZ_ANOM), LU_TRMM_data);
+--		Join the results
+store(join(MODIS_AMZ_EVI2_ANOM, LU_TRMM_data), MODIS_TRMM_AMZ);
+
+--Filter
+--store(filter(MODIS_TRMM_AMZ, precipitation_anomaly < -1), MODIS_TRMM_AMZ_EVIANOM);
+
+
+
 --Clean
 remove(MODIS_AMZ_BQ_JAS);
 remove(MODIS_AMZ_BQ_JAS_EVI2);
@@ -58,3 +87,16 @@ remove(MODIS_AMZ_BQ_JAS_EVI2_AVG_2000_2006);
 remove(MODIS_AMZ_BQ_JAS_EVI2_AVG_2005);
 remove(MODIS_AMZ_EVI2_COMP);
 --remove(MODIS_AMZ_EVI2_ANOM);
+remove(MODSIN);
+remove(MODSIN_SPHERIC);
+remove(MODSIN_SPHERIC_GEOCEN);
+remove(MODSIN_SPHERIC_GEOCEN_WGS84);
+remove(LU_TRMM_id);
+remove(LU_TRMM_data);
+
+
+
+--***********************************************************************************************
+--SELECT 
+--***********************************************************************************************
+
