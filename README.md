@@ -37,12 +37,14 @@ Reproduction of the computations on the article "Amazon Forest Green-Up During 2
 	</li>
 	<li>Other files
 	<ul>
-		<li><code>install_pyhdf.sh</code> - Install an interface for enabling python to handle HDFs.</li>
+		<li><code>installBoost_1570.shh</code> - Install Boost libraries.</li>
+		<li><code>installGribModis2SciDB.sh</code> - Install a tool for exporting HDFs to SciDB's binary.</li>
+		<li><code>install_pyhdf.sh</code> - DEPRECATED - Install an interface for enabling python to handle HDFs.</li>
 		<li><code>installParallel.sh</code> - Script for installing parallel.Parallel allows to execute scripts at the same time.</li>
 		<li><code>installPackages.R</code> - R script for installing R packages.</li>
-		<li><code>downloadData.R</code> - R script for downloading MODIS data from NASA website.</li>
-		<li><code>downloadData.sh</code> - Script for downloading MODIS in parallel. It is a wrapper of <code>downloadData.R</code></li>
-		<li><code>hdf2bin.sh</code> - Script for exporting HDFs to binary files. It is a wrapper of the python scripts available at <a href="http://github.com/albhasan/modis2scidb" target="_blank">modis2scidb</a>.</li>
+		<li><code>downloadData.R</code> - DEPRECATED - R script for downloading MODIS data from NASA website.</li>
+		<li><code>downloadData.sh</code> - DEPRECATED - Script for downloading MODIS in parallel. It is a wrapper of <code>downloadData.R</code></li>
+		<li><code>hdf2bin.sh</code> - DEPRECATED - Script for exporting HDFs to binary files. It is a wrapper of the python scripts available at <a href="http://github.com/albhasan/modis2scidb" target="_blank">modis2scidb</a>.</li>
 		<li><code>exploreResults.R</code> - Script for retrieving and ploting the resulting EVI2 anomalies.</li>
 	</ul>
 	</li>
