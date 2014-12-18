@@ -48,14 +48,6 @@ rm -rf /var/lib/postgresql/8.4/main
 ln -s /home/scidb/catalog/main /var/lib/postgresql/8.4/main
 /etc/init.d/postgresql start
 #********************************************************
-echo "***** Installing additional packages..."
-#********************************************************
-Rscript /home/scidb/installPackages.R packages=scidb verbose=0 quiet=0
-yes | /root/./installParallel.sh
-yes | /root/./installBoost_1570.sh 
-yes | /root/./installGribModis2SciDB.sh
-ldconfig
-#********************************************************
 echo "***** Setting up passwordless SSH..."
 #********************************************************
 yes | ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
@@ -70,6 +62,15 @@ wget https://github.com/Paradigm4/deployment/archive/master.zip
 unzip master.zip
 cd /root/deployment-master/cluster_install
 yes | ./cluster_install -s /home/scidb/$SCIDB_CONF_FILE
+#********************************************************
+echo "***** Installing additional packages..."
+#********************************************************
+Rscript /home/scidb/installPackages.R packages=scidb verbose=0 quiet=0
+yes | /root/./installParallel.sh
+yes | /root/./installBoost_1570.sh 
+yes | /root/./installGribModis2SciDB.sh
+ldconfig
+wget -P /opt/scidb/14.8/lib/scidb/plugins https://dl.dropboxusercontent.com/u/25989010/scidbResources/libsavebmp.so
 #********************************************************
 echo "***** Installing SHIM..."
 #********************************************************
@@ -180,8 +181,20 @@ echo "***** ***** Calculating EVI2-Rain anomalies..."
 #********************************************************
 iquery -f anomalyComputation.afl
 rm /home/scidb/pass.txt
+#********************************************************
+echo "***** ***** Exporting EVI2 anomalies as an image..."
+#********************************************************
+convert /home/scidb/evi2anom.bmp /home/scidb/evi2anom.jpg
+rm /home/scidb/evi2anom.bmp
+convert /home/scidb/evi2anom.jpg -rotate 90 /home/scidb/evi2anom_rotated.jpg
+rm /home/scidb/evi2anom.jpg
+mv /home/scidb/evi2anom_rotated.jpg /home/scidb/evi2anom.jpg
 EOF
 #----------------
 #********************************************************
 echo "***** Amazon Green-up - SciDB setup finished "
 #********************************************************
+
+
+
+

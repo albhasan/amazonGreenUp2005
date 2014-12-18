@@ -29,7 +29,8 @@ RUN apt-get -qq update && apt-get install --fix-missing -y --force-yes \
 	postgresql-8.4 \ 
 	sshpass \ 
 	git-core \ 
-	apt-transport-https
+	apt-transport-https \
+	imagemagick
 
 
 

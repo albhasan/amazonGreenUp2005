@@ -2,6 +2,10 @@ set no fetch;
 set lang afl;
 
 
+--***********************************************************************************************
+--RAIN ANOMALY COMPUTATION
+--***********************************************************************************************
+
 --Selects the data using:
 	--spatial: TRMM ids overlapping AMAZON's MODIS tiles
 	--temporal 1998-2006
@@ -60,6 +64,13 @@ store(join(MODIS_AMZ_BQ_JAS_EVI2_AVG_2000_2006, MODIS_AMZ_BQ_JAS_EVI2_AVG_2005),
 
 --Calculate Anomalies
 store(apply(MODIS_AMZ_EVI2_COMP, evi2_anomaly, (evi2_avg_jas_2005 - evi2_avg_jas_2000_2006)/evi2_stdev_jas_2000_2006), MODIS_AMZ_EVI2_ANOM);
+
+
+
+
+--***********************************************************************************************
+--FILTER EVI2 ANOMALY USING RAIN ANOMALY
+--***********************************************************************************************
 
 --Spatial join to TRMM
 --		Prepare an array with MODIS SINUSOIDAL coordinates and transform them to WGS84
@@ -124,4 +135,89 @@ remove(LU_TRMM_data);
 remove(z);
 --remove(MODIS_TRMM_AMZ_EVIANOM_HISTOGRAM);
 
+
+
+
+--***********************************************************************************************
+--EXPORT RESULTS AS IMAGE
+--***********************************************************************************************
+
+load_library('savebmp');
+--	CREATE ARRAY TEST_BMP <r:uint8, g:uint8, b:uint8> [x=0:2,10,0, y=0:2,10,0];
+--	INSERT INTO TEST_BMP '[[(0, 0, 0) (10, 10, 10) (100, 100, 100)] [(0, 250, 125) (125, 250, 0) (100, 100, 100)] [(250, 250, 250) (200, 200, 200) (150, 150, 150)]]';
+
+--Mape anomalies to pixel values
+--	aggregate(MODIS_TRMM_AMZ, min( evi2_anomaly)); = -2.217702724
+--	aggregate(MODIS_TRMM_AMZ, max( evi2_anomaly)); = 2.35306109483
+--  (2.5 - (-2.5))/255 = 0.0196078431372549
+--	pixel value = (evi2_anomaly + 2.5)/0.0196078431372549
+--store(apply(project(apply(MODIS_TRMM_AMZ, r, uint8((evi2_anomaly + 2.5)/0.0196078431372549)), r), g, uint8(r), b, uint8(r)), evi2anomBMP);
+
+
+--Apply color codes to evi2 anomalies
+--     evi2_anomaly
+--             -2,      -1.5,       -1,         1,         1.5,        2
+--     #481316", "#E51D24", "#F47E56", "#F7F7B6", "#58B734", "#259B43", "#184621
+
+--Original Saleska's classification
+--store(project(apply(MODIS_TRMM_AMZ, r, uint8(iif(evi2_anomaly < -2, 72,  iif(evi2_anomaly >= -2 and evi2_anomaly < -1.5, 229, iif(evi2_anomaly >= -1.5 and evi2_anomaly < -1, 244, iif(evi2_anomaly >= -1 and evi2_anomaly < 1, 247, iif(evi2_anomaly >= 1 and evi2_anomaly < 1.5, 88, iif(evi2_anomaly >= 1.5 and evi2_anomaly < 2, 37, iif(evi2_anomaly >= 2, 24, 0)))))))), g, uint8(iif(evi2_anomaly < -2, 19, iif(evi2_anomaly >= -2 and evi2_anomaly < -1.5, 29, iif(evi2_anomaly >= -1.5 and evi2_anomaly < -1, 126, iif(evi2_anomaly >= -1 and evi2_anomaly < 1, 247, iif(evi2_anomaly >= 1 and evi2_anomaly < 1.5, 183, iif(evi2_anomaly >= 1.5 and evi2_anomaly < 2, 155, iif(evi2_anomaly >= 2, 70, 0)))))))), b, uint8(iif(evi2_anomaly < -2, 22, iif(evi2_anomaly >= -2 and evi2_anomaly < -1.5, 36, iif(evi2_anomaly >= -1.5 and evi2_anomaly < -1, 86, iif(evi2_anomaly >= -1 and evi2_anomaly < 1, 182, iif(evi2_anomaly >= 1 and evi2_anomaly < 1.5, 52, iif(evi2_anomaly >= 1.5 and evi2_anomaly < 2, 67, iif(evi2_anomaly >= 2, 33, 0))))))))), r, g , b), evi2anomBMP);
+
+--Saleska's classification (interval's limits divided by 10)
+store(
+	project(
+		apply(
+			MODIS_TRMM_AMZ, 
+			r, uint8(
+				iif(evi2_anomaly < -0.2, 72, 
+					iif(evi2_anomaly >= -0.2 and evi2_anomaly < -0.15, 229,
+						iif(evi2_anomaly >= -0.15 and evi2_anomaly < -0.1, 244,
+							iif(evi2_anomaly >= -0.1 and evi2_anomaly < 0.1, 247,
+								iif(evi2_anomaly >= 0.1 and evi2_anomaly < 0.15, 88,
+									iif(evi2_anomaly >= 0.15 and evi2_anomaly < 0.2, 37,
+										iif(evi2_anomaly >= 0.2, 24, 0)
+									)
+								)
+							)
+						)
+					)
+				)
+			), 
+			g, uint8(
+				iif(evi2_anomaly < -0.2, 19, 
+					iif(evi2_anomaly >= -0.2 and evi2_anomaly < -0.15, 29,
+						iif(evi2_anomaly >= -0.15 and evi2_anomaly < -0.1, 126,
+							iif(evi2_anomaly >= -0.1 and evi2_anomaly < 0.1, 247,
+								iif(evi2_anomaly >= 0.1 and evi2_anomaly < 0.15, 183,
+									iif(evi2_anomaly >= 0.15 and evi2_anomaly < 0.2, 155,
+										iif(evi2_anomaly >= 0.2, 70, 0)
+									)
+								)
+							)
+						)
+					)
+				)
+			), 
+			b, uint8(
+				iif(evi2_anomaly < -0.2, 22, 
+					iif(evi2_anomaly >= -0.2 and evi2_anomaly < -0.15, 36,
+						iif(evi2_anomaly >= -0.15 and evi2_anomaly < -0.1, 86,
+							iif(evi2_anomaly >= -0.1 and evi2_anomaly < 0.1, 182,
+								iif(evi2_anomaly >= 0.1 and evi2_anomaly < 0.15, 52,
+									iif(evi2_anomaly >= 0.15 and evi2_anomaly < 0.2, 67,
+										iif(evi2_anomaly >= 0.2, 33, 0)
+									)
+								)
+							)
+						)
+					)
+				)
+			)
+		), r, g , b
+	), evi2anomBMP
+);
+savebmp(evi2anomBMP, '/home/scidb/evi2anom.bmp');
+
+
+--Clean
+remove(evi2anomBMP);
 
