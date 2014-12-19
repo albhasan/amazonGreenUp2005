@@ -104,7 +104,13 @@ iquery -aq "scan(TEST_ARRAY)"
 echo "***** ***** Downloading MODIS data..."
 #********************************************************
 cd ~
-parallel -j 2 --no-notice wget -r -np --retry-connrefused --wait=4 --tries=50 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/{1}/{2} ::: {1998..2006} ::: {182..246}
+#parallel -j 2 --no-notice wget -r -np --retry-connrefused --wait=4 --tries=50 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/{1}/{2} ::: {1998..2006} ::: {182..246}
+parallel -j 2 --no-notice wget -r -np --retry-connrefused --wait=4 --tries=50 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/{1}/182 ::: {1998..2006}
+parallel -j 2 --no-notice wget -r -np --retry-connrefused --wait=4 --tries=50 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/{1}/183 ::: {1998..2006}
+parallel -j 2 --no-notice wget -r -np --retry-connrefused --wait=4 --tries=50 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/{1}/213 ::: {1998..2006}
+parallel -j 2 --no-notice wget -r -np --retry-connrefused --wait=4 --tries=50 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/{1}/214 ::: {1998..2006}
+parallel -j 2 --no-notice wget -r -np --retry-connrefused --wait=4 --tries=50 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/{1}/244 ::: {1998..2006}
+parallel -j 2 --no-notice wget -r -np --retry-connrefused --wait=4 --tries=50 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/{1}/245 ::: {1998..2006}
 parallel -j 8 --no-notice wget -r -np --retry-connrefused --wait=1 --accept 'MOD09Q1.A200[0-6][1-2][0-9][0-9].h1[0-3]v[0-1][089]*' http://e4ftl01.cr.usgs.gov/MOLT/MOD09Q1.005/{1}.0{2}.{0..3}{0..9}/ ::: {2000..2006} ::: {7..9}
 #parallel -j 2 --no-notice wget -r -np --retry-connrefused --wait=2 --tries=30 ftp://disc2.nascom.nasa.gov/ftp/data/s4pa/TRMM_L3/TRMM_3B43/{1}/{2} ::: {1998..1998} ::: {182..246}
 #parallel -j 8 --no-notice wget -r -np --retry-connrefused --wait=1 --accept 'MOD09Q1.A20001[0-9][0-9].h10v08*' http://e4ftl01.cr.usgs.gov/MOLT/MOD09Q1.005/{1}.0{2}.0{0..9}/ ::: {2000..2001} ::: {7..8}
