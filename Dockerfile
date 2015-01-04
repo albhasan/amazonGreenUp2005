@@ -30,7 +30,7 @@ RUN apt-get -qq update && apt-get install --fix-missing -y --force-yes \
 	sshpass \ 
 	git-core \ 
 	apt-transport-https \
-	imagemagick
+	imagemagick 
 
 
 

@@ -57,7 +57,7 @@ yes | ssh-copy-id -i ~/.ssh/id_rsa.pub  "root@127.0.0.1 -p 49911"
 #********************************************************
 echo "***** Installing SciDB..."
 #********************************************************
-cd ~ 
+cd ~
 wget https://github.com/Paradigm4/deployment/archive/master.zip
 unzip master.zip
 cd /root/deployment-master/cluster_install
@@ -71,10 +71,11 @@ yes | /root/./installBoost_1570.sh
 yes | /root/./installGribModis2SciDB.sh
 ldconfig
 wget -P /opt/scidb/14.8/lib/scidb/plugins https://dl.dropboxusercontent.com/u/25989010/scidbResources/libsavebmp.so
+wget -P /opt/scidb/14.8/lib/scidb/plugins https://dl.dropboxusercontent.com/u/25989010/scidbResources/libgeosdb.so
 #********************************************************
 echo "***** Installing SHIM..."
 #********************************************************
-cd ~ 
+cd ~
 wget http://paradigm4.github.io/shim/shim_14.8_amd64.deb
 yes | gdebi -q shim_14.8_amd64.deb
 rm /var/lib/shim/conf
@@ -86,7 +87,7 @@ rm shim_14.8_amd64.deb
 #sudo su scidb
 su scidb <<'EOF'
 export LC_ALL="en_US.UTF-8"
-cd ~ 
+cd ~
 sed -i 's/1239/49914/g' ~/.bashrc
 source ~/.bashrc
 #********************************************************
@@ -156,7 +157,6 @@ find /home/scidb/e4ftl01.cr.usgs.gov/MOLT/MOD09Q1.005/ -type f -name '*.hdf' -pr
 #********************************************************
 echo "***** ***** Waiting for finishing uploading files to SciDB..."
 #********************************************************
-
 COUNTER=$(find /home/scidb/toLoad/ -type f -name '*.sdbbin' -print | wc -l)
 while [  $COUNTER -gt 0 ]; do
 	echo "Waiting for finishing uploading files to SciDB. Files to go... $COUNTER"
