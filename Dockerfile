@@ -33,7 +33,8 @@ RUN apt-get -qq update && apt-get install --fix-missing -y --force-yes \
 	git-core \ 
 	apt-transport-https \
 	imagemagick \ 
-	r-base \ 
+	r-base \
+	r-base-dev \
 	r-cran-spatial
 
 
