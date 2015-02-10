@@ -62,7 +62,7 @@ Reproduction of the computations on the article "Amazon Forest Green-Up During 2
 	<li>Setup SciDB on Docker and other required stuff:
 		<ul>
 			<li>Build a docker image <code>./setup.sh</code>. This script will build the Docker image <em>scidb_amazon_img</em> and it will start the Docker container <em>scidb_amazon1</em>.</li>
-			<li>Login the SciDB Docker container <em>scidb_amazon1</em> by using <code>ssh -p 49901 root@localhost</code>. The default password is <em>xxxx.xxxx.xxxx</em></li>
+			<li>Login the SciDB Docker container <em>scidb_amazon1</em> by using <code>ssh -p 49911 root@localhost</code>. The default password is <em>xxxx.xxxx.xxxx</em></li>
 		</ul>
 	</li>
 	<li>Run the container script using one of the SciDB configuration file names as a parameter, for example: <code>/home/root/./containerSetup.sh scidb_docker_2a.ini</code>.</li>
