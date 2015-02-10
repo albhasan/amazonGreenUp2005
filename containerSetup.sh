@@ -58,9 +58,9 @@ yes | ssh-copy-id -i ~/.ssh/id_rsa.pub  "root@127.0.0.1 -p 49911"
 echo "***** Installing SciDB..."
 #********************************************************
 cd ~
-wget https://github.com/Paradigm4/deployment/archive/master.zip
-unzip master.zip
-cd /root/deployment-master/cluster_install
+wget https://github.com/Paradigm4/deployment/archive/14.8.zip
+unzip 14.8.zip
+cd /root/deployment-14.8/cluster_install
 yes | ./cluster_install -s /home/scidb/$SCIDB_CONF_FILE
 #********************************************************
 echo "***** Installing additional packages..."
@@ -200,7 +200,6 @@ EOF
 #********************************************************
 echo "***** Amazon Green-up - SciDB setup finished "
 #********************************************************
-
 
 
 
